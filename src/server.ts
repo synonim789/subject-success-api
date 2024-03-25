@@ -1,6 +1,6 @@
 import 'dotenv/config'
 import mongoose from 'mongoose'
-import { app } from './app'
+import app from './app'
 import env from './utils/cleanEnv'
 
 const port = env.PORT
