@@ -66,3 +66,40 @@ export const signUp: RequestHandler<
     next(error)
   }
 }
+
+interface LoginBody {
+  email?: string
+  password?: string
+}
+
+export const login: RequestHandler<
+  unknown,
+  unknown,
+  LoginBody,
+  unknown
+> = async (req, res, next) => {
+  const email = req.body.email
+  const passwordRaw = req.body.password
+  try {
+    if (!email || !passwordRaw) {
+      throw createHttpError(
+        400,
+        'Please provide both email and password to proceed'
+      )
+    }
+
+    const user = await UserModel.findOne({ email }).exec()
+    if (!user) {
+      throw createHttpError(401, 'Invalid email or password')
+    }
+
+    const passwordMatch = await bcrypt.compare(passwordRaw, user.password)
+
+    if (!passwordMatch) {
+      throw createHttpError(401, 'Invalid email or password')
+    }
+    res.status(201).json({ username: user.username, email: user.email })
+  } catch (error) {
+    next(error)
+  }
+}
