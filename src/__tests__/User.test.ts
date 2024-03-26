@@ -1,7 +1,10 @@
+import jwt from 'jsonwebtoken'
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 import supertest from 'supertest'
 import app from '../app'
+import UserModel from '../models/User.model'
+import env from '../utils/cleanEnv'
 
 const singUpInput = {
   email: 'text@example.com',
@@ -12,11 +15,6 @@ const singUpInput = {
 const logInInput = {
   email: 'text@example.com',
   password: 'Test12345!',
-}
-
-const userPayload = {
-  email: 'text@example.com',
-  username: 'John Doe',
 }
 
 beforeAll(async () => {
@@ -31,12 +29,12 @@ afterAll(async () => {
 
 describe('User Routes test', () => {
   describe('Sign Up Test', () => {
-    it('should return with a 201 status code with user payload', async () => {
+    it('should return with a 201 status code with User "${user.username} created" message', async () => {
       const { statusCode, body } = await supertest(app)
         .post('/user/sign-up')
         .send(singUpInput)
       expect(statusCode).toBe(201)
-      expect(body).toEqual(userPayload)
+      expect(body.message).toEqual(`User ${singUpInput.username} created`)
     })
     it("Should return with a 400 status and 'all fields must be filled' message", async () => {
       const { body, statusCode } = await supertest(app)
@@ -75,12 +73,13 @@ describe('User Routes test', () => {
     })
   })
   describe('Login test', () => {
-    it('should return with a 201 status code with user payload', async () => {
-      const { statusCode, body } = await supertest(app)
+    it('should return with a 201 status code with user payload and set cookies', async () => {
+      const { statusCode, body, headers } = await supertest(app)
         .post('/user/login')
         .send(logInInput)
       expect(statusCode).toBe(201)
-      expect(body).toEqual(userPayload)
+      expect(body.accessToken).toBeDefined()
+      expect(headers['set-cookie']).toBeDefined()
     })
     it("Should return with a 400 status and 'Please provide both email and password to proceed' message", async () => {
       const { statusCode, body } = await supertest(app)
@@ -104,6 +103,44 @@ describe('User Routes test', () => {
         .send({ ...logInInput, password: 'test' })
       expect(statusCode).toBe(401)
       expect(body.message).toEqual('Invalid email or password')
+    })
+  })
+  describe('Refresh Token Test', () => {
+    it('Should return a new access token when the refresh token is valid', async () => {
+      const user = await UserModel.findOne({ email: logInInput.email }).exec()
+      const mockedRefreshToken = jwt.sign(
+        { userId: user?._id },
+        env.REFRESH_TOKEN_SECRET
+      )
+      const { statusCode, body } = await supertest(app)
+        .get('/user/refresh')
+        .set('Cookie', `jwt=${mockedRefreshToken}`)
+      expect(statusCode).toBe(201)
+      expect(body.accessToken).toBeDefined()
+    })
+    it('Should return a 401 status and "Unauthorized" message when there is no cookie', async () => {
+      const { statusCode, body } = await supertest(app).get('/user/refresh')
+      expect(statusCode).toBe(401)
+      expect(body.message).toEqual('Unauthorized')
+    })
+    it('Should return a 403 if the refresh token is invalid', async () => {
+      const { statusCode, body } = await supertest(app)
+        .get('/user/refresh')
+        .set('Cookie', 'jwt=invalid')
+      expect(statusCode).toBe(403)
+      expect(body.message).toEqual('Forbidden')
+    })
+    it('Should return a 401 if the user is not found', async () => {
+      const userId = new mongoose.Types.ObjectId().toString()
+      const mockedRefreshToken = jwt.sign(
+        { userId: userId },
+        env.REFRESH_TOKEN_SECRET
+      )
+      const { statusCode, body } = await supertest(app)
+        .get('/user/refresh')
+        .set('Cookie', `jwt=${mockedRefreshToken}`)
+      expect(statusCode).toBe(401)
+      expect(body.message).toEqual('Unauthorized')
     })
   })
 })
