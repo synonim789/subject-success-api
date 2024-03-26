@@ -28,7 +28,7 @@ export const signUp: RequestHandler<
     )
 
     if (!emailRegex.test(email)) {
-      throw createHttpError(404, 'Not valid Email')
+      throw createHttpError(400, 'Not valid Email')
     }
 
     const passwordRegex = new RegExp(
