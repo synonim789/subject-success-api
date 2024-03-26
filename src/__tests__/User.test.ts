@@ -1,7 +1,7 @@
 import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 import supertest from 'supertest'
-import app from '../src/app'
+import app from '../app'
 
 const singUpInput = {
   email: 'text@example.com',

@@ -1,5 +1,5 @@
 import supertest from 'supertest'
-import app from '../src/app'
+import app from '../app'
 
 describe('Endpoint Not Found Test', () => {
   it('should return status 404 and Endpoint not found message', async () => {
