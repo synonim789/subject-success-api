@@ -65,6 +65,7 @@ export const login: RequestHandler<
         sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24,
       })
+      .json({ message: 'User logged Successful' })
   } catch (error) {
     next(error)
   }
