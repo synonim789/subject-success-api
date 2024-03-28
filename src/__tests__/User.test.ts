@@ -36,6 +36,7 @@ describe('User Routes test', () => {
       expect(statusCode).toBe(201)
       expect(body.message).toEqual(`User ${singUpInput.username} created`)
     })
+
     it("Should return with a 400 status and 'all fields must be filled' message", async () => {
       const { body, statusCode } = await supertest(app)
         .post('/user/sign-up')
@@ -43,6 +44,7 @@ describe('User Routes test', () => {
       expect(statusCode).toBe(400)
       expect(body.message).toEqual('All fields must be filled')
     })
+
     it("Should return with a 400 status and 'Not valid Email' message", async () => {
       const { body, statusCode } = await supertest(app)
         .post('/user/sign-up')
@@ -50,6 +52,7 @@ describe('User Routes test', () => {
       expect(statusCode).toBe(400)
       expect(body.message).toEqual('Not valid Email')
     })
+
     it("Should return with a 400 status and 'Password not strong enough.' message", async () => {
       const { body, statusCode } = await supertest(app)
         .post('/user/sign-up')
@@ -57,6 +60,7 @@ describe('User Routes test', () => {
       expect(statusCode).toBe(400)
       expect(body.message).toEqual('Password not strong enough.')
     })
+
     it("Should return with a 409 status and 'Username already taken' message", async () => {
       const { body, statusCode } = await supertest(app)
         .post('/user/sign-up')
@@ -64,6 +68,7 @@ describe('User Routes test', () => {
       expect(statusCode).toBe(409)
       expect(body.message).toEqual('Username already taken')
     })
+
     it("Should return with a 409 status and 'Email already taken' message", async () => {
       const { body, statusCode } = await supertest(app)
         .post('/user/sign-up')
@@ -118,11 +123,13 @@ describe('User Routes test', () => {
       expect(statusCode).toBe(201)
       expect(body.accessToken).toBeDefined()
     })
+
     it('Should return a 401 status and "Unauthorized" message when there is no cookie', async () => {
       const { statusCode, body } = await supertest(app).get('/user/refresh')
       expect(statusCode).toBe(401)
       expect(body.message).toEqual('Unauthorized')
     })
+
     it('Should return a 403 if the refresh token is invalid', async () => {
       const { statusCode, body } = await supertest(app)
         .get('/user/refresh')
@@ -130,6 +137,7 @@ describe('User Routes test', () => {
       expect(statusCode).toBe(403)
       expect(body.message).toEqual('Forbidden')
     })
+
     it('Should return a 401 if the user is not found', async () => {
       const userId = new mongoose.Types.ObjectId().toString()
       const mockedRefreshToken = jwt.sign(

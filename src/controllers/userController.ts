@@ -90,7 +90,7 @@ export const login: RequestHandler<
     }
 
     const user = await UserModel.findOne({ email }).exec()
-    if (!user) {
+    if (!user || !user.password) {
       throw createHttpError(401, 'Invalid email or password')
     }
 

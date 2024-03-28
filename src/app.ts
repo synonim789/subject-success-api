@@ -5,7 +5,7 @@ import express from 'express'
 import createHttpError from 'http-errors'
 import morgan from 'morgan'
 import userRoutes from './routes/userRoutes'
-import errorHandler from './utils/errorHandler'
+import errorHandler from './middleware/errorHandler'
 const app = express()
 
 app.use(cors())
