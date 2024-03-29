@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken'
 import qs from 'querystring'
 import UserModel from '../models/User.model'
 import env from '../utils/cleanEnv'
+import getGithubUser from '../utils/getGithubUser'
 import getGoogleUser from '../utils/getGoogleUser'
 
 interface LoginBody {
@@ -106,7 +107,7 @@ export const refresh: RequestHandler = async (req, res, next) => {
   }
 }
 
-interface GoogleAuthBody {
+interface GoogleAuthQuery {
   code: string
 }
 
@@ -122,7 +123,7 @@ export const googleAuth: RequestHandler<
   unknown,
   unknown,
   unknown,
-  GoogleAuthBody
+  GoogleAuthQuery
 > = async (req, res, next) => {
   const code = req.query.code
   try {
@@ -193,7 +194,67 @@ export const googleAuth: RequestHandler<
       })
       .redirect('http://localhost:5173')
   } catch (error: any) {
-    console.log(error)
+    next(error)
+  }
+}
+
+interface GitHubAuthQuery {
+  code: string
+  path: string
+}
+
+export const githubAuth: RequestHandler<
+  unknown,
+  unknown,
+  unknown,
+  GitHubAuthQuery
+> = async (req, res, next) => {
+  const code = req.query.code
+  const path = req.query.path
+  try {
+    const githubUser = await getGithubUser({ code })
+
+    const user = await UserModel.findOneAndUpdate(
+      {
+        githubId: githubUser.id,
+      },
+      {
+        username: githubUser.login,
+        githubId: githubUser.id,
+      },
+      {
+        new: true,
+        upsert: true,
+      }
+    )
+
+    const accessToken = jwt.sign(
+      { userId: user._id, username: user.username },
+      env.ACCESS_TOKEN_SECRET,
+      { expiresIn: '1h' }
+    )
+    const refreshToken = jwt.sign(
+      { userId: user._id },
+      env.REFRESH_TOKEN_SECRET,
+      { expiresIn: '1d' }
+    )
+
+    res
+      .status(201)
+      .cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 15,
+      })
+      .cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        maxAge: 1000 * 60 * 60 * 24,
+      })
+      .redirect(`http://localhost:5173${path}`)
+  } catch (error) {
     next(error)
   }
 }
