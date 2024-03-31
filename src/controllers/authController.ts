@@ -96,7 +96,7 @@ export const refresh: RequestHandler = async (req, res, next) => {
             env.ACCESS_TOKEN_SECRET,
             { expiresIn: '1h' }
           )
-          res.status(201).json({ accessToken })
+          res.status(201).json(accessToken)
         } catch (error) {
           next(error)
         }
