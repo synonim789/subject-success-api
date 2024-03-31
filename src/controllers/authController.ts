@@ -44,12 +44,12 @@ export const login: RequestHandler<
     const accessToken = jwt.sign(
       { userId: user._id, username: user.username },
       env.ACCESS_TOKEN_SECRET,
-      { expiresIn: 60 * 15 }
+      { expiresIn: '15m' }
     )
     const refreshToken = jwt.sign(
       { userId: user._id },
       env.REFRESH_TOKEN_SECRET,
-      { expiresIn: 60 * 60 * 24 }
+      { expiresIn: '1d' }
     )
 
     res
@@ -66,7 +66,7 @@ export const login: RequestHandler<
         sameSite: 'none',
         maxAge: 1000 * 60 * 60 * 24,
       })
-      .json({ message: 'User logged Successful' })
+      .json(accessToken)
   } catch (error) {
     next(error)
   }
