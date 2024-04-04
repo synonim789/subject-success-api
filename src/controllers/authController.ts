@@ -75,18 +75,18 @@ export const login: RequestHandler<
 export const refresh: RequestHandler = async (req, res, next) => {
   const cookies = req.cookies
   try {
-    if (!cookies.jwt) {
+    if (!cookies.refreshToken) {
       throw createHttpError(401, 'Unauthorized')
     }
 
-    const refreshToken = cookies.jwt
+    const refreshToken = cookies.refreshToken
 
     jwt.verify(
       refreshToken,
       env.REFRESH_TOKEN_SECRET,
       async (err: unknown, decoded: any) => {
         try {
-          if (err) throw createHttpError(403, 'Forbidden')
+          if (err) throw createHttpError(403, err)
           const foundUser = await UserModel.findById(decoded.userId).exec()
           if (!foundUser) {
             throw createHttpError(401, 'Unauthorized')
@@ -254,6 +254,13 @@ export const githubAuth: RequestHandler<
         maxAge: 1000 * 60 * 60 * 24,
       })
       .redirect(`http://localhost:5173${path}`)
+  } catch (error) {
+    next(error)
+  }
+}
+
+export const logout: RequestHandler = async (req, res, next) => {
+  try {
   } catch (error) {
     next(error)
   }
