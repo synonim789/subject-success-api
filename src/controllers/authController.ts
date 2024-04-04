@@ -86,7 +86,7 @@ export const refresh: RequestHandler = async (req, res, next) => {
       env.REFRESH_TOKEN_SECRET,
       async (err: unknown, decoded: any) => {
         try {
-          if (err) throw createHttpError(403, err)
+          if (err) throw createHttpError(403, 'Forbidden')
           const foundUser = await UserModel.findById(decoded.userId).exec()
           if (!foundUser) {
             throw createHttpError(401, 'Unauthorized')
