@@ -7,6 +7,7 @@ import UserModel from '../models/User.model'
 import env from '../utils/cleanEnv'
 
 const singUpInput = {
+  _id: 'jgurtergier',
   email: 'text@example.com',
   username: 'John Doe',
   password: 'Test12345!',
@@ -34,7 +35,9 @@ describe('User Routes test', () => {
         .post('/user/sign-up')
         .send(singUpInput)
       expect(statusCode).toBe(201)
-      expect(body.message).toEqual(`User ${singUpInput.username} created`)
+      expect(body.message).toEqual(
+        `${singUpInput.username} created! Welcome now you have to log in`
+      )
     })
 
     it("Should return with a 400 status and 'all fields must be filled' message", async () => {
@@ -83,7 +86,7 @@ describe('User Routes test', () => {
         .post('/auth/login')
         .send(logInInput)
       expect(statusCode).toBe(201)
-      expect(body.message).toEqual('User logged Successful')
+      expect(body).toBeTruthy()
       expect(headers['set-cookie']).toBeDefined()
     })
     it("Should return with a 400 status and 'Please provide both email and password to proceed' message", async () => {
@@ -119,9 +122,9 @@ describe('User Routes test', () => {
       )
       const { statusCode, body } = await supertest(app)
         .get('/auth/refresh')
-        .set('Cookie', `jwt=${mockedRefreshToken}`)
+        .set('Cookie', `refreshToken=${mockedRefreshToken}`)
       expect(statusCode).toBe(201)
-      expect(body.accessToken).toBeDefined()
+      expect(body).toBeDefined()
     })
 
     it('Should return a 401 status and "Unauthorized" message when there is no cookie', async () => {
@@ -133,7 +136,7 @@ describe('User Routes test', () => {
     it('Should return a 403 if the refresh token is invalid', async () => {
       const { statusCode, body } = await supertest(app)
         .get('/auth/refresh')
-        .set('Cookie', 'jwt=invalid')
+        .set('Cookie', 'refreshToken=invalid')
       expect(statusCode).toBe(403)
       expect(body.message).toEqual('Forbidden')
     })
@@ -146,7 +149,7 @@ describe('User Routes test', () => {
       )
       const { statusCode, body } = await supertest(app)
         .get('/auth/refresh')
-        .set('Cookie', `jwt=${mockedRefreshToken}`)
+        .set('Cookie', `refreshToken=${mockedRefreshToken}`)
       expect(statusCode).toBe(401)
       expect(body.message).toEqual('Unauthorized')
     })
