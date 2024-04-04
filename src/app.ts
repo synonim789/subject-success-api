@@ -1,27 +1,27 @@
-import cookieParser from 'cookie-parser'
-import cors from 'cors'
-import 'dotenv/config'
-import express from 'express'
-import createHttpError from 'http-errors'
-import morgan from 'morgan'
-import { corsOptions } from './config/corsOptions'
-import errorHandler from './middleware/errorHandler'
-import authRoutes from './routes/authRoutes'
-import userRoutes from './routes/userRoutes'
-const app = express()
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import 'dotenv/config';
+import express from 'express';
+import createHttpError from 'http-errors';
+import morgan from 'morgan';
+import { corsOptions } from './config/corsOptions';
+import errorHandler from './middleware/errorHandler';
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+const app = express();
 
-app.use(cors(corsOptions))
-app.use(morgan('dev'))
-app.use(express.json())
-app.use(cookieParser())
+app.use(cors(corsOptions));
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(cookieParser());
 
-app.use('/user', userRoutes)
-app.use('/auth', authRoutes)
+app.use('/user', userRoutes);
+app.use('/auth', authRoutes);
 
 app.use((req, res, next) => {
-  next(createHttpError(404, 'Endpoint not found'))
-})
+   next(createHttpError(404, 'Endpoint not found'));
+});
 
-app.use(errorHandler)
+app.use(errorHandler);
 
-export default app
+export default app;
