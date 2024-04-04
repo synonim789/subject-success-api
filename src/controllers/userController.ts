@@ -60,7 +60,9 @@ export const signUp: RequestHandler<
       password: password,
     })
 
-    res.status(201).json({ message: `User ${user.username} created` })
+    res.status(201).json({
+      message: `${user.username} created! Welcome now you have to log in`,
+    })
   } catch (error) {
     next(error)
   }
