@@ -10,4 +10,6 @@ export default cleanEnv(process.env, {
    GOOGLE_REDIRECT_URL: str(),
    GITHUB_CLIENT_ID: str(),
    GITHUB_CLIENT_SECRET: str(),
+   MAILTRAP_USER: str(),
+   MAILTRAP_PASSWORD: str(),
 });

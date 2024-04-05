@@ -1,7 +1,11 @@
 import bcrypt from 'bcrypt';
 import { RequestHandler } from 'express';
 import createHttpError from 'http-errors';
+import nodemailer from 'nodemailer';
+import OtpModel from '../models/Otp.model';
 import UserModel from '../models/User.model';
+import env from '../utils/cleanEnv';
+
 interface SignUpBody {
    username?: string;
    email?: string;
@@ -72,6 +76,123 @@ export const getUser: RequestHandler = async (req, res, next) => {
    try {
    } catch (error) {
       res.redirect(`http:localhost:3000`);
+      next(error);
+   }
+};
+
+interface ForgotPasswordBody {
+   email?: string;
+}
+
+export const forgotPassword: RequestHandler<
+   unknown,
+   unknown,
+   ForgotPasswordBody,
+   unknown
+> = async (req, res, next) => {
+   const email = req.body.email;
+   try {
+      if (!email) {
+         throw createHttpError(401, 'Email was not provided');
+      }
+
+      const user = await UserModel.findOne({ email: email });
+
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      if (user?.githubId || user?.googleId) {
+         throw createHttpError(
+            403,
+            "Your account was registered by google or github/ you can't reset these passwords",
+         );
+      }
+
+      const generateOtp = Math.floor(Math.random() * 9000) + 1000;
+
+      const otpExist = await OtpModel.findOne({ email: email }).exec();
+      if (otpExist) {
+         throw createHttpError(400, 'Otp for this email already exist');
+      }
+
+      await OtpModel.create({ email: email, otp: generateOtp });
+
+      const transport = nodemailer.createTransport({
+         host: 'sandbox.smtp.mailtrap.io',
+         port: 2525,
+         auth: {
+            user: env.MAILTRAP_USER,
+            pass: env.MAILTRAP_PASSWORD,
+         },
+      });
+
+      const info = await transport.sendMail({
+         from: 'subject-success@gmail.com',
+         to: email,
+         subject: 'Password Reset',
+         html: `<b>${generateOtp}</b>`,
+      });
+
+      res.status(200).json({ message: 'Email sent' });
+   } catch (error) {
+      next(error);
+   }
+};
+
+interface ResetPasswordBody {
+   otp?: string;
+   password?: string;
+   confirmPassword?: string;
+}
+
+export const resetPassword: RequestHandler<
+   unknown,
+   unknown,
+   ResetPasswordBody,
+   unknown
+> = async (req, res, next) => {
+   const otp = req.body.otp;
+   const passwordRaw = req.body.password;
+   const confirmPassword = req.body.confirmPassword;
+   try {
+      if (!otp) {
+         throw createHttpError(400, 'OTP Required');
+      }
+
+      const otpNumber = parseInt(otp);
+
+      const otpExist = await OtpModel.findOne({ otp: otpNumber }).exec();
+
+      if (!otpExist) {
+         throw createHttpError(400, 'Invalid OTP');
+      }
+
+      if (!passwordRaw || !confirmPassword) {
+         throw createHttpError(
+            400,
+            'password and confirm password are required',
+         );
+      }
+
+      if (passwordRaw !== confirmPassword) {
+         throw createHttpError(400, 'Passwords do not match');
+      }
+
+      const password = await bcrypt.hash(passwordRaw, 10);
+
+      const email = otpExist.email;
+
+      const user = await UserModel.findOne({ email: email }).exec();
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      user.password = password;
+      await user.save();
+
+      res.status(200).json({ message: 'Password updated successfully' });
+   } catch (error) {
       next(error);
    }
 };
