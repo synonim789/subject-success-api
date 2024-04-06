@@ -260,6 +260,22 @@ export const githubAuth: RequestHandler<
 
 export const logout: RequestHandler = async (req, res, next) => {
    try {
+      const cookies = req.cookies;
+      if (!cookies.accessToken || !cookies.refreshToken) {
+         return res.sendStatus(204);
+      }
+      res.clearCookie('accessToken', {
+         httpOnly: true,
+         sameSite: 'none',
+         secure: true,
+      });
+      res.clearCookie('refreshToken', {
+         httpOnly: true,
+         sameSite: 'none',
+         secure: true,
+      });
+
+      res.status(200).json({ message: 'User logged out' });
    } catch (error) {
       next(error);
    }
