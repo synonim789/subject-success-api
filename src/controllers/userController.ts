@@ -141,7 +141,7 @@ export const forgotPassword: RequestHandler<
 };
 
 interface ResetPasswordBody {
-   otp?: string;
+   otp?: number;
    password?: string;
    confirmPassword?: string;
 }
@@ -160,9 +160,7 @@ export const resetPassword: RequestHandler<
          throw createHttpError(400, 'OTP Required');
       }
 
-      const otpNumber = parseInt(otp);
-
-      const otpExist = await OtpModel.findOne({ otp: otpNumber }).exec();
+      const otpExist = await OtpModel.findOne({ otp: otp }).exec();
 
       if (!otpExist) {
          throw createHttpError(400, 'Invalid OTP');
