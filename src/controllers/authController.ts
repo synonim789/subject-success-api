@@ -261,7 +261,7 @@ export const githubAuth: RequestHandler<
 export const logout: RequestHandler = async (req, res, next) => {
    try {
       const cookies = req.cookies;
-      if (!cookies.accessToken || !cookies.refreshToken) {
+      if (!cookies.accessToken && !cookies.refreshToken) {
          return res.sendStatus(204);
       }
       res.clearCookie('accessToken', {
