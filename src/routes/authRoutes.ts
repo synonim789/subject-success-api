@@ -3,6 +3,7 @@ import {
    githubAuth,
    googleAuth,
    login,
+   logout,
    refresh,
 } from '../controllers/authController';
 
@@ -12,5 +13,6 @@ router.post('/login', login);
 router.get('/refresh', refresh);
 router.get('/google', googleAuth);
 router.get('/github', githubAuth);
+router.post('/logout', logout);
 
 export default router;
