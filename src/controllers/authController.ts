@@ -35,6 +35,10 @@ export const login: RequestHandler<
          throw createHttpError(401, 'Invalid email or password');
       }
 
+      if (user.googleId || user.googleId) {
+         throw createHttpError(401, 'User is signed up by Google or Github');
+      }
+
       const passwordMatch = await bcrypt.compare(passwordRaw, user.password);
 
       if (!passwordMatch) {
@@ -42,7 +46,7 @@ export const login: RequestHandler<
       }
 
       const accessToken = jwt.sign(
-         { userId: user._id, username: user.username },
+         { userId: user._id },
          env.ACCESS_TOKEN_SECRET,
          { expiresIn: '15m' },
       );
@@ -53,19 +57,19 @@ export const login: RequestHandler<
       );
 
       res.status(201)
-         .cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            maxAge: 1000 * 60 * 15,
-         })
          .cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
             maxAge: 1000 * 60 * 60 * 24,
          })
-         .json(accessToken);
+         .cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            maxAge: 1000 * 60 * 15,
+         })
+         .json({ isAuthenticated: true });
    } catch (error) {
       next(error);
    }
@@ -74,10 +78,6 @@ export const login: RequestHandler<
 export const refresh: RequestHandler = async (req, res, next) => {
    const cookies = req.cookies;
    try {
-      if (!cookies.refreshToken) {
-         throw createHttpError(401, 'Unauthorized');
-      }
-
       const refreshToken = cookies.refreshToken;
 
       jwt.verify(
@@ -93,11 +93,17 @@ export const refresh: RequestHandler = async (req, res, next) => {
                   throw createHttpError(401, 'Unauthorized');
                }
                const accessToken = jwt.sign(
-                  { userId: foundUser._id, username: foundUser.username },
+                  { userId: foundUser._id },
                   env.ACCESS_TOKEN_SECRET,
                   { expiresIn: '1h' },
                );
-               res.status(201).json(accessToken);
+               res.cookie('accessToken', accessToken, {
+                  httpOnly: true,
+                  secure: true,
+                  sameSite: 'none',
+                  maxAge: 1000 * 60 * 15,
+               });
+               res.status(201).json({ isAuthenticated: true });
             } catch (error) {
                next(error);
             }
@@ -155,42 +161,43 @@ export const googleAuth: RequestHandler<
 
       const googleUser = await getGoogleUser({ id_token, access_token });
 
-      const user = await UserModel.findOneAndUpdate(
-         {
-            email: googleUser.email,
-         },
-         {
-            username: googleUser.name,
-            googleId: googleUser.id,
-         },
-         {
-            new: true,
-            upsert: true,
-         },
-      );
+      let user = await UserModel.findOne({
+         $or: [{ email: googleUser.email }, { googleId: googleUser.id }],
+      }).exec();
 
-      const accessToken = jwt.sign(
-         { userId: user._id, username: user.username },
-         env.ACCESS_TOKEN_SECRET,
-         { expiresIn: '1h' },
-      );
+      if (!user) {
+         user = await UserModel.create({
+            username: googleUser.name,
+            email: googleUser.email,
+            picture: googleUser.picture,
+            googleId: googleUser.id,
+         });
+      }
+
       const refreshToken = jwt.sign(
          { userId: user._id },
          env.REFRESH_TOKEN_SECRET,
          { expiresIn: '1d' },
       );
+
+      const accessToken = jwt.sign(
+         { userId: user._id },
+         env.ACCESS_TOKEN_SECRET,
+         { expiresIn: '15m' },
+      );
+
       res.status(201)
-         .cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            maxAge: 1000 * 60 * 15,
-         })
          .cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true,
             sameSite: 'none',
             maxAge: 1000 * 60 * 60 * 24,
+         })
+         .cookie('accessToken', accessToken, {
+            httpOnly: true,
+            secure: true,
+            sameSite: 'none',
+            maxAge: 1000 * 60 * 15,
          })
          .redirect('http://localhost:5173');
    } catch (error: any) {
@@ -214,25 +221,22 @@ export const githubAuth: RequestHandler<
    try {
       const githubUser = await getGithubUser({ code });
 
-      const user = await UserModel.findOneAndUpdate(
-         {
-            githubId: githubUser.id,
-         },
-         {
-            username: githubUser.login,
-            githubId: githubUser.id,
-         },
-         {
-            new: true,
-            upsert: true,
-         },
-      );
+      let user = await UserModel.findOne({
+         $or: [
+            { email: githubUser.githubEmail.email },
+            { githubId: githubUser.githubData.id },
+         ],
+      }).exec();
 
-      const accessToken = jwt.sign(
-         { userId: user._id, username: user.username },
-         env.ACCESS_TOKEN_SECRET,
-         { expiresIn: '1h' },
-      );
+      if (!user) {
+         user = await UserModel.create({
+            username: githubUser.githubData.login,
+            email: githubUser.githubEmail.email,
+            picture: githubUser.githubData.avatar_url,
+            githubId: githubUser.githubData.id,
+         });
+      }
+
       const refreshToken = jwt.sign(
          { userId: user._id },
          env.REFRESH_TOKEN_SECRET,
@@ -240,12 +244,6 @@ export const githubAuth: RequestHandler<
       );
 
       res.status(201)
-         .cookie('accessToken', accessToken, {
-            httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            maxAge: 1000 * 60 * 15,
-         })
          .cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: true,
@@ -261,15 +259,15 @@ export const githubAuth: RequestHandler<
 export const logout: RequestHandler = async (req, res, next) => {
    try {
       const cookies = req.cookies;
-      if (!cookies.accessToken && !cookies.refreshToken) {
+      if (!cookies.refreshToken) {
          return res.sendStatus(204);
       }
-      res.clearCookie('accessToken', {
+      res.clearCookie('refreshToken', {
          httpOnly: true,
          sameSite: 'none',
          secure: true,
       });
-      res.clearCookie('refreshToken', {
+      res.clearCookie('accessToken', {
          httpOnly: true,
          sameSite: 'none',
          secure: true,
