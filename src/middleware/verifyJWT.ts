@@ -13,7 +13,6 @@ export const verifyJwt = (req: Request, res: Response, next: NextFunction) => {
          accessToken,
          env.ACCESS_TOKEN_SECRET,
          (err: unknown, decoded: any) => {
-            console.log(decoded);
             req.user = decoded;
             next();
          },
