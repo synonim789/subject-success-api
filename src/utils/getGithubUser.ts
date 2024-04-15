@@ -41,6 +41,13 @@ interface GithubUser {
    updated_at: string;
 }
 
+type GithubEmail = {
+   email: string;
+   primary: boolean;
+   verified: true;
+   visibility?: boolean;
+};
+
 const getGithubUser = async ({ code }: GetGithubUser) => {
    const githubToken = await axios.post(
       `https://github.com/login/oauth/access_token?client_id=${env.GITHUB_CLIENT_ID}&client_secret=${env.GITHUB_CLIENT_SECRET}&code=${code}`,
@@ -55,6 +62,17 @@ const getGithubUser = async ({ code }: GetGithubUser) => {
       },
    );
 
-   return githubUser.data;
+   const githubUserEmails = await axios.get<GithubEmail[]>(
+      'https://api.github.com/user/emails',
+      {
+         headers: { Authorization: `Bearer ${access_token}` },
+      },
+   );
+
+   const githubUserEmail = githubUserEmails.data.filter(
+      (email) => email.primary === true,
+   );
+
+   return { githubData: githubUser.data, githubEmail: githubUserEmail[0] };
 };
 export default getGithubUser;
