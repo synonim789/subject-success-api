@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema(
       password: { type: String },
       googleId: { type: String },
       githubId: { type: String },
+      picture: { type: String },
    },
    { timestamps: true },
 );
