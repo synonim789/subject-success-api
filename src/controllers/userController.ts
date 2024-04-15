@@ -73,7 +73,19 @@ export const signUp: RequestHandler<
 };
 
 export const getUser: RequestHandler = async (req, res, next) => {
+   const userId = req.user?.userId;
    try {
+      if (!userId) {
+         throw createHttpError(400, 'No UserId in token');
+      }
+
+      const user = await UserModel.findById(userId).select(
+         '-password -googleId -githubId',
+      );
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+      res.status(200).json(user);
    } catch (error) {
       res.redirect(`http:localhost:3000`);
       next(error);
