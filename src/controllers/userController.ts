@@ -248,7 +248,7 @@ export const setNewPassword: RequestHandler<
       user.password = hashedPassword;
       await user.save();
 
-      res.status(200).json('Password updated successfully');
+      res.status(200).json({ message: 'Password updated successfully' });
    } catch (error) {
       next(error);
    }
