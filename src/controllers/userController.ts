@@ -253,3 +253,38 @@ export const setNewPassword: RequestHandler<
       next(error);
    }
 };
+
+interface UpdateUsernameBody {
+   username?: string;
+}
+
+export const updateUsername: RequestHandler<
+   unknown,
+   unknown,
+   UpdateUsernameBody,
+   unknown
+> = async (req, res, next) => {
+   const username = req.body.username;
+   try {
+      if (!username) {
+         throw createHttpError(400, 'Username is required');
+      }
+
+      const userId = req.user?.userId;
+      if (!userId) {
+         throw createHttpError(400, 'Invalid token');
+      }
+
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      user.username = username;
+      await user.save();
+      res.status(200).json({ message: 'Username updated successfully' });
+   } catch (error) {
+      next(error);
+   }
+};
