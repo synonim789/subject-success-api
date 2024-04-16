@@ -5,6 +5,7 @@ import nodemailer from 'nodemailer';
 import OtpModel from '../models/Otp.model';
 import UserModel from '../models/User.model';
 import env from '../utils/cleanEnv';
+import { uploadImage } from '../utils/uploadImage';
 
 interface SignUpBody {
    username?: string;
@@ -220,6 +221,7 @@ export const setNewPassword: RequestHandler<
 > = async (req, res, next) => {
    const confirmPasswordRaw = req.body.confirmPassword;
    const passwordRaw = req.body.password;
+   const userId = req.user?.userId;
    try {
       if (!passwordRaw || !confirmPasswordRaw) {
          throw createHttpError(
@@ -231,8 +233,6 @@ export const setNewPassword: RequestHandler<
       if (passwordRaw !== confirmPasswordRaw) {
          throw createHttpError(400, 'Passwords do not match');
       }
-
-      const userId = req.user?.userId;
 
       if (!userId) {
          throw createHttpError(400, 'Token not provided');
@@ -265,12 +265,12 @@ export const updateUsername: RequestHandler<
    unknown
 > = async (req, res, next) => {
    const username = req.body.username;
+   const userId = req.user?.userId;
    try {
       if (!username) {
          throw createHttpError(400, 'Username is required');
       }
 
-      const userId = req.user?.userId;
       if (!userId) {
          throw createHttpError(400, 'Invalid token');
       }
@@ -284,6 +284,35 @@ export const updateUsername: RequestHandler<
       user.username = username;
       await user.save();
       res.status(200).json({ message: 'Username updated successfully' });
+   } catch (error) {
+      next(error);
+   }
+};
+
+export const updateProfilePicture: RequestHandler = async (req, res, next) => {
+   const image = req.file;
+   const userId = req.user?.userId;
+   try {
+      if (!image) {
+         throw createHttpError(400, 'Image is required');
+      }
+
+      if (!userId) {
+         throw createHttpError(400, 'Invalid token');
+      }
+
+      const imageUrl = await uploadImage(image);
+
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      user.picture = imageUrl;
+      user.save();
+
+      res.status(200).json({ message: 'Image uploaded' });
    } catch (error) {
       next(error);
    }

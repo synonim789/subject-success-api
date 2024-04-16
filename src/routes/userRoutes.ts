@@ -5,8 +5,10 @@ import {
    resetPassword,
    setNewPassword,
    signUp,
+   updateProfilePicture,
    updateUsername,
 } from '../controllers/userController';
+import { upload } from '../middleware/multer';
 import { verifyJwt } from '../middleware/verifyJWT';
 
 const router = express.Router();
@@ -18,5 +20,11 @@ router.put('/reset-password', resetPassword);
 router.get('/user', verifyJwt, getUser);
 router.put('/set-new-password', verifyJwt, setNewPassword);
 router.put('/update-username', verifyJwt, updateUsername);
+router.put(
+   '/update-profile-image',
+   verifyJwt,
+   upload.single('image'),
+   updateProfilePicture,
+);
 
 export default router;
