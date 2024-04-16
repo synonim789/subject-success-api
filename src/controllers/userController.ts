@@ -206,3 +206,50 @@ export const resetPassword: RequestHandler<
       next(error);
    }
 };
+
+interface SetNewPasswordBody {
+   password?: string;
+   confirmPassword?: string;
+}
+
+export const setNewPassword: RequestHandler<
+   unknown,
+   unknown,
+   SetNewPasswordBody,
+   unknown
+> = async (req, res, next) => {
+   const confirmPasswordRaw = req.body.confirmPassword;
+   const passwordRaw = req.body.password;
+   try {
+      if (!passwordRaw || !confirmPasswordRaw) {
+         throw createHttpError(
+            400,
+            'password and confirm password are required',
+         );
+      }
+
+      if (passwordRaw !== confirmPasswordRaw) {
+         throw createHttpError(400, 'Passwords do not match');
+      }
+
+      const userId = req.user?.userId;
+
+      if (!userId) {
+         throw createHttpError(400, 'Token not provided');
+      }
+
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      const hashedPassword = await bcrypt.hash(passwordRaw, 10);
+      user.password = hashedPassword;
+      await user.save();
+
+      res.status(200).json('Password updated successfully');
+   } catch (error) {
+      next(error);
+   }
+};
