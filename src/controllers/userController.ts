@@ -88,7 +88,6 @@ export const getUser: RequestHandler = async (req, res, next) => {
       }
       res.status(200).json(user);
    } catch (error) {
-      res.redirect(`http:localhost:3000`);
       next(error);
    }
 };
@@ -118,7 +117,7 @@ export const forgotPassword: RequestHandler<
       if (user?.githubId || user?.googleId) {
          throw createHttpError(
             403,
-            "Your account was registered by google or github/ you can't reset these passwords",
+            "Your account was registered by google or github you can't reset these passwords",
          );
       }
 
@@ -140,7 +139,7 @@ export const forgotPassword: RequestHandler<
          },
       });
 
-      const info = await transport.sendMail({
+      await transport.sendMail({
          from: 'subject-success@gmail.com',
          to: email,
          subject: 'Password Reset',
@@ -301,13 +300,13 @@ export const updateProfilePicture: RequestHandler = async (req, res, next) => {
          throw createHttpError(400, 'Invalid token');
       }
 
-      const imageUrl = await uploadImage(image);
-
       const user = await UserModel.findById(userId);
 
       if (!user) {
          throw createHttpError(404, 'User not found');
       }
+
+      const imageUrl = await uploadImage(image);
 
       user.picture = imageUrl;
       user.save();
