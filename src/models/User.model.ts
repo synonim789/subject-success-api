@@ -1,4 +1,4 @@
-import mongoose, { InferSchemaType, model } from 'mongoose';
+import mongoose, { InferSchemaType, Schema, model } from 'mongoose';
 
 const userSchema = new mongoose.Schema(
    {
@@ -8,6 +8,12 @@ const userSchema = new mongoose.Schema(
       googleId: { type: String },
       githubId: { type: String },
       picture: { type: String },
+      subjects: [
+         {
+            type: Schema.Types.ObjectId,
+            ref: 'Subject',
+         },
+      ],
    },
    { timestamps: true },
 );
