@@ -13,6 +13,10 @@ const taskSchema = new mongoose.Schema({
       type: Boolean,
       default: false,
    },
+   user: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+   },
 });
 
 type Task = InferSchemaType<typeof taskSchema>;
