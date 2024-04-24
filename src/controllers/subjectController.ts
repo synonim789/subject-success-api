@@ -20,11 +20,9 @@ export const getSubjects: RequestHandler = async (req, res, next) => {
          throw createHttpError(404, 'User not found');
       }
 
-      const subjects = await SubjectModel.find({ user: userId });
-
-      if (!subjects) {
-         throw createHttpError(404, 'Subjects not found');
-      }
+      const subjects = await SubjectModel.find({ user: userId }).populate(
+         'tasks',
+      );
 
       res.status(200).json(subjects);
    } catch (error) {
