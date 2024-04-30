@@ -8,11 +8,6 @@ import OtpModel from '../models/Otp.model';
 import UserModel from '../models/User.model';
 import env from '../utils/cleanEnv';
 
-jest.mock('../utils/getGoogleUser', () => ({
-   __esModule: true,
-   default: jest.fn(),
-}));
-
 const singUpInput = {
    _id: new mongoose.Types.ObjectId(),
    email: 'text@example.com',
@@ -197,7 +192,7 @@ describe('User Routes test', () => {
          );
 
          const response = await supertest(app)
-            .get('/user/user')
+            .get('/user')
             .set('Cookie', [`accessToken=${token}`]);
          expect(response.status).toBe(200);
 
@@ -210,14 +205,14 @@ describe('User Routes test', () => {
       });
 
       it('should return 401 if token is missing', async () => {
-         const response = await supertest(app).get('/user/user');
+         const response = await supertest(app).get('/user');
          expect(response.status).toBe(401);
       });
 
       it('should return 400 if there is no userId in token', async () => {
          const accessToken = jwt.sign({ userId: '' }, env.ACCESS_TOKEN_SECRET);
          const response = await supertest(app)
-            .get('/user/user')
+            .get('/user')
             .set('Cookie', [`accessToken=${accessToken}`]);
          expect(response.status).toBe(400);
          expect(response.body).toEqual({ message: 'No UserId in token' });
@@ -228,7 +223,7 @@ describe('User Routes test', () => {
             env.ACCESS_TOKEN_SECRET,
          );
          const response = await supertest(app)
-            .get('/user/user')
+            .get('/user')
             .set('Cookie', [`accessToken=${accessToken}`]);
          expect(response.status).toBe(404);
          expect(response.body).toEqual({ message: 'User not found' });
