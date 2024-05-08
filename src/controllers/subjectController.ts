@@ -130,6 +130,7 @@ export const updateSubject: RequestHandler<
    const type = req.body.type;
    const completed = req.body.completed;
    const userId = req.user?.userId;
+   const grade = req.body.grade;
    try {
       if (!mongoose.isValidObjectId(subjectId)) {
          throw createHttpError(400, 'Invalid Subject Id');
@@ -163,7 +164,7 @@ export const updateSubject: RequestHandler<
          subject.completed = completed || false;
       } else if (type === 'grade') {
          subject.type = 'grade';
-         subject.grade = 0;
+         subject.grade = grade || 0;
          subject.completed = null;
       }
 
