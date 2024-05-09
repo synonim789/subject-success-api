@@ -114,20 +114,68 @@ export const addTask: RequestHandler<
    }
 };
 
-interface UpdateTaskRequest {
+interface UpdateTaskTitle {
    title?: string;
-   completed?: boolean;
 }
 
-export const updateTask: RequestHandler<
+export const updateTaskTitle: RequestHandler<
    ParamsDictionary,
    unknown,
-   UpdateTaskRequest,
+   UpdateTaskTitle,
    unknown
 > = async (req, res, next) => {
    const title = req.body.title;
-   const completed = req.body.completed;
    const taskId = req.params.taskId;
+   const userId = req.user?.userId;
+   try {
+      if (!mongoose.isValidObjectId(taskId)) {
+         throw createHttpError(400, 'Invalid Task Id');
+      }
+
+      if (!userId) {
+         throw createHttpError(400, 'Invalid Token');
+      }
+
+      const user = await UserModel.findById(userId);
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      const task = await TaskModel.findById(taskId).exec();
+      if (!task) {
+         throw createHttpError(404, 'Task Not found');
+      }
+
+      if (task.user?.toString() !== user._id.toString()) {
+         throw createHttpError(403, 'No permission to edit this task');
+      }
+
+      if (!title) {
+         throw createHttpError(400, 'Title is required');
+      }
+
+      task.title = title;
+
+      await task.save();
+
+      res.status(200).json(task);
+   } catch (error) {
+      next(error);
+   }
+};
+
+interface UpdateTaskCompleted {
+   completed?: boolean;
+}
+
+export const updateTaskCompleted: RequestHandler<
+   ParamsDictionary,
+   unknown,
+   UpdateTaskCompleted,
+   unknown
+> = async (req, res, next) => {
+   const taskId = req.params.taskId;
+   const completed = req.body.completed;
    const userId = req.user?.userId;
    try {
       if (!mongoose.isValidObjectId(taskId)) {
@@ -153,9 +201,11 @@ export const updateTask: RequestHandler<
          throw createHttpError(403, 'No permission to edit this task');
       }
 
-      task.title = title || task.title;
-      task.completed = completed || task.completed;
+      if (completed === null || completed === undefined) {
+         throw createHttpError(400, 'Completed is required');
+      }
 
+      task.completed = completed;
       await task.save();
 
       res.status(200).json(task);
