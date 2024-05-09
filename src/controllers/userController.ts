@@ -108,7 +108,7 @@ export const forgotPassword: RequestHandler<
          throw createHttpError(401, 'Email was not provided');
       }
 
-      const user = await UserModel.findOne({ email: email });
+      const user = await UserModel.findOne({ email: email }).exec();
 
       if (!user) {
          throw createHttpError(404, 'User not found');
