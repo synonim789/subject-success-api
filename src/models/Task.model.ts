@@ -17,6 +17,11 @@ const taskSchema = new mongoose.Schema({
       type: Schema.Types.ObjectId,
       ref: 'User',
    },
+   date: {
+      type: String,
+      required: false,
+      default: null,
+   },
 });
 
 type Task = InferSchemaType<typeof taskSchema>;

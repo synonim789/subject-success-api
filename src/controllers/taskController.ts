@@ -63,6 +63,7 @@ export const getTask: RequestHandler = async (req, res, next) => {
 interface AddTaskRequest {
    title?: string;
    subjectId?: string;
+   date?: string;
 }
 
 export const addTask: RequestHandler<
@@ -74,6 +75,7 @@ export const addTask: RequestHandler<
    const title = req.body.title;
    const subjectId = req.body.subjectId;
    const userId = req.user?.userId;
+   const date = req.body.date;
    try {
       if (!subjectId || !title) {
          throw createHttpError(400, 'subjectId, title and are required');
@@ -104,6 +106,7 @@ export const addTask: RequestHandler<
          completed: false,
          user: user._id,
          subject: subject._id,
+         date: date || null,
       });
 
       subject.tasks.push(task._id);
@@ -116,6 +119,7 @@ export const addTask: RequestHandler<
 
 interface UpdateTaskTitle {
    title?: string;
+   date?: string;
 }
 
 export const updateTaskTitle: RequestHandler<
@@ -127,6 +131,7 @@ export const updateTaskTitle: RequestHandler<
    const title = req.body.title;
    const taskId = req.params.taskId;
    const userId = req.user?.userId;
+   const date = req.body.date;
    try {
       if (!mongoose.isValidObjectId(taskId)) {
          throw createHttpError(400, 'Invalid Task Id');
@@ -155,6 +160,7 @@ export const updateTaskTitle: RequestHandler<
       }
 
       task.title = title;
+      task.date = date;
 
       await task.save();
 
