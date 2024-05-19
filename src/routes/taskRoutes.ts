@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
    addTask,
    getTask,
+   getTaskDates,
    getTasks,
    removeTask,
    updateTaskCompleted,
@@ -13,9 +14,10 @@ const router = Router();
 
 router.get('/', verifyJwt, getTasks);
 router.post('/', verifyJwt, addTask);
+router.get('/dates', verifyJwt, getTaskDates);
 router.get('/:taskId', verifyJwt, getTask);
 router.put('/title/:taskId', verifyJwt, updateTaskTitle);
-router.put('/completed/:taskId', verifyJwt, updateTaskCompleted)
+router.put('/completed/:taskId', verifyJwt, updateTaskCompleted);
 router.delete('/:taskId', verifyJwt, removeTask);
 
 export default router;

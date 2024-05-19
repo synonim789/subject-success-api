@@ -260,3 +260,26 @@ export const removeTask: RequestHandler = async (req, res, next) => {
       next(error);
    }
 };
+
+export const getTaskDates: RequestHandler = async (req, res, next) => {
+   const userId = req.user?.userId;
+   try {
+      if (!userId) {
+         throw createHttpError(400, 'Invalid token');
+      }
+
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      const taskWithDates = await TaskModel.find({
+         $and: [{ user: userId }, { date: { $ne: null } }],
+      }).populate('subject');
+
+      res.status(200).json(taskWithDates);
+   } catch (error) {
+      next(error);
+   }
+};
