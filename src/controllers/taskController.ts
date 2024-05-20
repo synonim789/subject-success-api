@@ -283,3 +283,60 @@ export const getTaskDates: RequestHandler = async (req, res, next) => {
       next(error);
    }
 };
+
+export const getCompletedCount: RequestHandler = async (req, res, next) => {
+   const userId = req.user?.userId;
+   try {
+      if (!userId) {
+         throw createHttpError(400, 'Invalid token');
+      }
+
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      const tasks = await TaskModel.find({ user: userId });
+      const taskCount = tasks.length;
+
+      const completedTasks = await TaskModel.find({
+         completed: true,
+         user: userId,
+      });
+      const completedTaskCount = completedTasks.length;
+
+      res.status(200).json({
+         taskAmount: taskCount,
+         completedTasks: completedTaskCount,
+      });
+   } catch (error) {
+      next(error);
+   }
+};
+
+export const getRecommendedTasks: RequestHandler = async (req, res, next) => {
+   try {
+      const userId = req.user?.userId;
+      if (!userId) {
+         throw createHttpError(400, 'Invalid token');
+      }
+
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      const recommendedTasks = await TaskModel.find({
+         completed: false,
+         user: userId,
+      })
+         .populate('subject')
+         .sort({ date: -1 })
+         .limit(3);
+      res.status(200).json(recommendedTasks);
+   } catch (error) {
+      next(error);
+   }
+};
