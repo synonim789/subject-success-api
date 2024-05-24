@@ -18,7 +18,7 @@ export const getTasks: RequestHandler = async (req, res, next) => {
          throw createHttpError(404, 'User not found');
       }
 
-      const tasks = await TaskModel.find({ user: userId });
+      const tasks = await TaskModel.find({ user: userId }).populate('subject');
 
       res.status(200).json(tasks);
    } catch (error) {
@@ -44,7 +44,7 @@ export const getTask: RequestHandler = async (req, res, next) => {
          throw createHttpError(404, 'User not found');
       }
 
-      const task = await TaskModel.findById(taskId);
+      const task = await TaskModel.findById(taskId).populate('subject');
 
       if (!task) {
          throw createHttpError(404, 'Task not found');
