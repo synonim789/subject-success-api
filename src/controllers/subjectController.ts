@@ -213,3 +213,57 @@ export const deleteSubject: RequestHandler = async (req, res, next) => {
       next(error);
    }
 };
+
+export const getRecommendedSubject: RequestHandler = async (req, res, next) => {
+   const userId = req.user?.userId;
+   try {
+      if (!userId) {
+         throw createHttpError(400, 'Invalid token');
+      }
+
+      const user = await UserModel.findById(userId);
+
+      if (!user) {
+         throw createHttpError(404, 'User not found');
+      }
+
+      const subjects = await SubjectModel.aggregate([
+         {
+            $match: {
+               user: new mongoose.Types.ObjectId(userId),
+            },
+         },
+         {
+            $lookup: {
+               from: 'tasks',
+               localField: 'tasks',
+               foreignField: '_id',
+               as: 'taskDetails',
+            },
+         },
+         {
+            $project: {
+               _id: 1,
+               name: 1,
+               totalTask: { $size: '$taskDetails' },
+               completedTasks: {
+                  $size: {
+                     $filter: {
+                        input: '$taskDetails',
+                        as: 'task',
+                        cond: { $eq: ['$$task.completed', true] },
+                     },
+                  },
+               },
+            },
+         },
+         {
+            $limit: 3,
+         },
+      ]);
+
+      res.status(200).json(subjects);
+   } catch (error) {
+      next(error);
+   }
+};
