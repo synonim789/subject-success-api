@@ -8,14 +8,15 @@ import {
    updateSubject,
 } from '../controllers/subjectController';
 import { authorization } from '../middleware/authorization';
+import { asyncWrapper } from '../utils/asyncWrapper';
 
 const router = Router();
 
-router.get('/', authorization, getSubjects);
-router.post('/', authorization, addSubject);
-router.get('/recommended', authorization, getRecommendedSubject);
-router.get('/:subjectId', authorization, getSubject);
-router.put('/:subjectId', authorization, updateSubject);
-router.delete('/:subjectId', authorization, deleteSubject);
+router.get('/', authorization, asyncWrapper(getSubjects));
+router.post('/', authorization, asyncWrapper(addSubject));
+router.get('/recommended', authorization, asyncWrapper(getRecommendedSubject));
+router.get('/:subjectId', authorization, asyncWrapper(getSubject));
+router.put('/:subjectId', authorization, asyncWrapper(updateSubject));
+router.delete('/:subjectId', authorization, asyncWrapper(deleteSubject));
 
 export default router;
