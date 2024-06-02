@@ -4,43 +4,22 @@ import createHttpError from 'http-errors';
 import nodemailer from 'nodemailer';
 import OtpModel from '../models/Otp.model';
 import UserModel from '../models/User.model';
+import {
+   ForgotPasswordSchema,
+   ResetPasswordSchema,
+   SetNewPasswordSchema,
+   SingUpSchema,
+   UpdateUsernameSchema,
+} from '../schemas/user';
 import env from '../utils/cleanEnv';
 import { uploadImage } from '../utils/uploadImage';
 
-interface SignUpBody {
-   username?: string;
-   email?: string;
-   password?: string;
-}
-
-export const signUp: RequestHandler<
-   unknown,
-   unknown,
-   SignUpBody,
-   unknown
-> = async (req, res, next) => {
-   const username = req.body.username;
-   const email = req.body.email;
-   const passwordRaw = req.body.password;
-   if (!username || !email || !passwordRaw) {
-      throw createHttpError(400, 'All fields must be filled');
-   }
-
-   const emailRegex = new RegExp(
-      /[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?/g,
-   );
-
-   if (!emailRegex.test(email)) {
-      throw createHttpError(400, 'Not valid Email');
-   }
-
-   const passwordRegex = new RegExp(
-      /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/gm,
-   );
-
-   if (!passwordRegex.test(passwordRaw)) {
-      throw createHttpError(400, 'Password not strong enough.');
-   }
+export const signUp: RequestHandler = async (req, res) => {
+   const {
+      email,
+      password: passwordRaw,
+      username,
+   } = SingUpSchema.parse(req.body);
 
    const existingUsername = await UserModel.findOne({
       username: username,
@@ -69,7 +48,7 @@ export const signUp: RequestHandler<
    });
 };
 
-export const getUser: RequestHandler = async (req, res, next) => {
+export const getUser: RequestHandler = async (req, res) => {
    const userId = req.user.userId;
 
    const user = await UserModel.findById(userId).select(
@@ -81,20 +60,8 @@ export const getUser: RequestHandler = async (req, res, next) => {
    res.status(200).json(user);
 };
 
-interface ForgotPasswordBody {
-   email?: string;
-}
-
-export const forgotPassword: RequestHandler<
-   unknown,
-   unknown,
-   ForgotPasswordBody,
-   unknown
-> = async (req, res, next) => {
-   const email = req.body.email;
-   if (!email) {
-      throw createHttpError(401, 'Email was not provided');
-   }
+export const forgotPassword: RequestHandler = async (req, res) => {
+   const { email } = ForgotPasswordSchema.parse(req.body);
 
    const user = await UserModel.findOne({ email: email }).exec();
 
@@ -137,21 +104,12 @@ export const forgotPassword: RequestHandler<
    res.status(200).json({ message: 'Email sent' });
 };
 
-interface ResetPasswordBody {
-   otp?: number;
-   password?: string;
-   confirmPassword?: string;
-}
-
-export const resetPassword: RequestHandler<
-   unknown,
-   unknown,
-   ResetPasswordBody,
-   unknown
-> = async (req, res, next) => {
-   const otp = req.body.otp;
-   const passwordRaw = req.body.password;
-   const confirmPassword = req.body.confirmPassword;
+export const resetPassword: RequestHandler = async (req, res) => {
+   const {
+      otp,
+      confirmPassword,
+      password: passwordRaw,
+   } = ResetPasswordSchema.parse(req.body);
    if (!otp) {
       throw createHttpError(400, 'OTP Required');
    }
@@ -185,20 +143,11 @@ export const resetPassword: RequestHandler<
    res.status(200).json({ message: 'Password updated successfully' });
 };
 
-interface SetNewPasswordBody {
-   password?: string;
-   confirmPassword?: string;
-}
+export const setNewPassword: RequestHandler = async (req, res) => {
+   const { password: passwordRaw, confirmPassword: confirmPasswordRaw } =
+      SetNewPasswordSchema.parse(req.body);
 
-export const setNewPassword: RequestHandler<
-   unknown,
-   unknown,
-   SetNewPasswordBody,
-   unknown
-> = async (req, res, next) => {
-   const confirmPasswordRaw = req.body.confirmPassword;
-   const passwordRaw = req.body.password;
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    if (!passwordRaw || !confirmPasswordRaw) {
       throw createHttpError(400, 'password and confirm password are required');
    }
@@ -224,17 +173,8 @@ export const setNewPassword: RequestHandler<
    res.status(200).json({ message: 'Password updated successfully' });
 };
 
-interface UpdateUsernameBody {
-   username?: string;
-}
-
-export const updateUsername: RequestHandler<
-   unknown,
-   unknown,
-   UpdateUsernameBody,
-   unknown
-> = async (req, res, next) => {
-   const username = req.body.username;
+export const updateUsername: RequestHandler = async (req, res) => {
+   const { username } = UpdateUsernameSchema.parse(req.body);
    const userId = req.user?.userId;
    if (!username) {
       throw createHttpError(400, 'Username is required');
@@ -251,7 +191,7 @@ export const updateUsername: RequestHandler<
    res.status(200).json({ message: 'Username updated successfully' });
 };
 
-export const updateProfilePicture: RequestHandler = async (req, res, next) => {
+export const updateProfilePicture: RequestHandler = async (req, res) => {
    const image = req.file;
    const userId = req.user?.userId;
    if (!image) {
