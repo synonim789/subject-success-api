@@ -70,10 +70,7 @@ export const signUp: RequestHandler<
 };
 
 export const getUser: RequestHandler = async (req, res, next) => {
-   const userId = req.user?.userId;
-   if (!userId) {
-      throw createHttpError(400, 'No UserId in token');
-   }
+   const userId = req.user.userId;
 
    const user = await UserModel.findById(userId).select(
       '-password -googleId -githubId',
@@ -243,10 +240,6 @@ export const updateUsername: RequestHandler<
       throw createHttpError(400, 'Username is required');
    }
 
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
    const user = await UserModel.findById(userId);
 
    if (!user) {
@@ -263,10 +256,6 @@ export const updateProfilePicture: RequestHandler = async (req, res, next) => {
    const userId = req.user?.userId;
    if (!image) {
       throw createHttpError(400, 'Image is required');
-   }
-
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
    }
 
    const user = await UserModel.findById(userId);
