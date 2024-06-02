@@ -5,7 +5,7 @@ import SubjectModel from '../models/Subject.model';
 import TaskModel from '../models/Task.model';
 import { AddSubjectSchema, UpdateSubjectSchema } from '../schemas/subject';
 
-export const getSubjects: RequestHandler = async (req, res, next) => {
+export const getSubjects: RequestHandler = async (req, res) => {
    const userId = req.user?.userId;
 
    const subjects = await SubjectModel.find({ user: userId }).populate('tasks');
@@ -13,7 +13,7 @@ export const getSubjects: RequestHandler = async (req, res, next) => {
    res.status(200).json(subjects);
 };
 
-export const getSubject: RequestHandler = async (req, res, next) => {
+export const getSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
    const userId = req.user?.userId;
    if (!mongoose.isValidObjectId(subjectId)) {
@@ -33,7 +33,7 @@ export const getSubject: RequestHandler = async (req, res, next) => {
    res.status(200).json(subject);
 };
 
-export const addSubject: RequestHandler = async (req, res, next) => {
+export const addSubject: RequestHandler = async (req, res) => {
    const { name, type } = AddSubjectSchema.parse(req.body);
    const userId = req.user.userId;
    if (!name || !type) {
@@ -57,14 +57,7 @@ export const addSubject: RequestHandler = async (req, res, next) => {
    res.status(200).json(subject);
 };
 
-interface UpdateSubjectRequest {
-   name?: string;
-   type?: 'grade' | 'completion';
-   grade?: number;
-   completed?: boolean;
-}
-
-export const updateSubject: RequestHandler = async (req, res, next) => {
+export const updateSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
    const { name, type, completed, grade } = UpdateSubjectSchema.parse(req.body);
    const userId = req.user?.userId;
@@ -99,7 +92,7 @@ export const updateSubject: RequestHandler = async (req, res, next) => {
    res.status(200).json(subject);
 };
 
-export const deleteSubject: RequestHandler = async (req, res, next) => {
+export const deleteSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
    const userId = req.user?.userId;
 
@@ -123,7 +116,7 @@ export const deleteSubject: RequestHandler = async (req, res, next) => {
    res.status(200).json({ message: 'Task removed successfully' });
 };
 
-export const getRecommendedSubject: RequestHandler = async (req, res, next) => {
+export const getRecommendedSubject: RequestHandler = async (req, res) => {
    const userId = req.user.userId;
 
    const subjects = await SubjectModel.aggregate([
