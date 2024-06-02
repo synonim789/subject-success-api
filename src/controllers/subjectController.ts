@@ -4,20 +4,9 @@ import createHttpError from 'http-errors';
 import mongoose from 'mongoose';
 import SubjectModel from '../models/Subject.model';
 import TaskModel from '../models/Task.model';
-import UserModel from '../models/User.model';
 
 export const getSubjects: RequestHandler = async (req, res, next) => {
    const userId = req.user?.userId;
-
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
 
    const subjects = await SubjectModel.find({ user: userId }).populate('tasks');
 
@@ -31,22 +20,13 @@ export const getSubject: RequestHandler = async (req, res, next) => {
       throw createHttpError(400, 'Invalid subject id');
    }
 
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
-
    const subject = await SubjectModel.findById(subjectId);
 
    if (!subject) {
       throw createHttpError(404, 'Subject not found');
    }
 
-   if (subject.user?.toString() !== user._id.toString()) {
+   if (subject.user?.toString() !== userId) {
       throw createHttpError(403, 'No permission to get task');
    }
 
@@ -71,21 +51,11 @@ export const addSubject: RequestHandler<
       throw createHttpError(400, 'name and type are required');
    }
 
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
-
    const subject = new SubjectModel();
 
    subject.name = name;
    subject.status = 'noTasks';
-   subject.user = user._id;
+   subject.user = new mongoose.Types.ObjectId(userId);
 
    if (type === 'completion') {
       subject.type = 'completion';
@@ -121,23 +91,13 @@ export const updateSubject: RequestHandler<
       throw createHttpError(400, 'Invalid Subject Id');
    }
 
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
-
    const subject = await SubjectModel.findById(subjectId);
 
    if (!subject) {
       throw createHttpError(404, 'Subject not found');
    }
 
-   if (subject.user?.toString() !== user._id.toString()) {
+   if (subject.user?.toString() !== userId) {
       throw createHttpError(403, 'No Permission to update this subject');
    }
 
@@ -166,22 +126,12 @@ export const deleteSubject: RequestHandler = async (req, res, next) => {
       throw createHttpError(400, 'Invalid subject');
    }
 
-   if (!userId) {
-      throw createHttpError(400, 'invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
-
    const subject = await SubjectModel.findById(subjectId);
    if (!subject) {
       throw createHttpError(404, 'Subject not found');
    }
 
-   if (subject.user?.toString() !== user._id.toString()) {
+   if (subject.user?.toString() !== userId) {
       throw createHttpError(403, 'No Permission to delete this subject');
    }
 
@@ -193,16 +143,7 @@ export const deleteSubject: RequestHandler = async (req, res, next) => {
 };
 
 export const getRecommendedSubject: RequestHandler = async (req, res, next) => {
-   const userId = req.user?.userId;
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
+   const userId = req.user.userId;
 
    const subjects = await SubjectModel.aggregate([
       {
