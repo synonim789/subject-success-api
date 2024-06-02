@@ -6,13 +6,14 @@ import {
    logout,
    refresh,
 } from '../controllers/authController';
+import { asyncWrapper } from '../utils/asyncWrapper';
 
 const router = express.Router();
 
-router.post('/login', login);
-router.get('/refresh', refresh);
-router.get('/google', googleAuth);
-router.get('/github', githubAuth);
-router.post('/logout', logout);
+router.post('/login', asyncWrapper(login));
+router.get('/refresh', asyncWrapper(refresh));
+router.get('/google', asyncWrapper(googleAuth));
+router.get('/github', asyncWrapper(githubAuth));
+router.post('/logout', asyncWrapper(logout));
 
 export default router;
