@@ -1,9 +1,9 @@
 import { RequestHandler } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
 import createHttpError from 'http-errors';
 import mongoose from 'mongoose';
 import SubjectModel from '../models/Subject.model';
 import TaskModel from '../models/Task.model';
+import { AddSubjectSchema, UpdateSubjectSchema } from '../schemas/subject';
 
 export const getSubjects: RequestHandler = async (req, res, next) => {
    const userId = req.user?.userId;
@@ -33,20 +33,9 @@ export const getSubject: RequestHandler = async (req, res, next) => {
    res.status(200).json(subject);
 };
 
-interface AddSubjectRequest {
-   name?: string;
-   type?: 'grade' | 'completion';
-}
-
-export const addSubject: RequestHandler<
-   unknown,
-   unknown,
-   AddSubjectRequest,
-   unknown
-> = async (req, res, next) => {
-   const name = req.body.name;
-   const type = req.body.type;
-   const userId = req.user?.userId;
+export const addSubject: RequestHandler = async (req, res, next) => {
+   const { name, type } = AddSubjectSchema.parse(req.body);
+   const userId = req.user.userId;
    if (!name || !type) {
       throw createHttpError(400, 'name and type are required');
    }
@@ -75,18 +64,10 @@ interface UpdateSubjectRequest {
    completed?: boolean;
 }
 
-export const updateSubject: RequestHandler<
-   ParamsDictionary,
-   unknown,
-   UpdateSubjectRequest,
-   unknown
-> = async (req, res, next) => {
+export const updateSubject: RequestHandler = async (req, res, next) => {
    const subjectId = req.params.subjectId;
-   const name = req.body.name;
-   const type = req.body.type;
-   const completed = req.body.completed;
+   const { name, type, completed, grade } = UpdateSubjectSchema.parse(req.body);
    const userId = req.user?.userId;
-   const grade = req.body.grade;
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid Subject Id');
    }
