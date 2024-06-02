@@ -5,32 +5,20 @@ import createHttpError from 'http-errors';
 import jwt from 'jsonwebtoken';
 import qs from 'querystring';
 import UserModel from '../models/User.model';
+import {
+   GithubAuthSchema,
+   GoogleAuthSchema,
+   LoginSchema,
+} from '../schemas/auth';
 import env from '../utils/cleanEnv';
 import getGithubUser from '../utils/getGithubUser';
 import getGoogleUser from '../utils/getGoogleUser';
 
-interface LoginBody {
-   email?: string;
-   password?: string;
-}
+export const login: RequestHandler = async (req, res) => {
+   const validatedData = LoginSchema.parse(req.body);
 
-export const login: RequestHandler<
-   unknown,
-   unknown,
-   LoginBody,
-   unknown
-> = async (req, res, next) => {
-   const email = req.body.email;
-   const passwordRaw = req.body.password;
-   if (!email || !passwordRaw) {
-      throw createHttpError(
-         400,
-         'Please provide both email and password to proceed',
-      );
-   }
-
-   const user = await UserModel.findOne({ email }).exec();
-   if (!user || !user.password) {
+   const user = await UserModel.findOne({ email: validatedData.email }).exec();
+   if (!user) {
       throw createHttpError(401, 'Invalid email or password');
    }
 
@@ -38,7 +26,10 @@ export const login: RequestHandler<
       throw createHttpError(401, 'User is signed up by Google or Github');
    }
 
-   const passwordMatch = await bcrypt.compare(passwordRaw, user.password);
+   const passwordMatch = await bcrypt.compare(
+      validatedData.password,
+      user.password,
+   );
 
    if (!passwordMatch) {
       throw createHttpError(401, 'Invalid email or password');
@@ -102,10 +93,6 @@ export const refresh: RequestHandler = async (req, res, next) => {
    );
 };
 
-interface GoogleAuthQuery {
-   code: string;
-}
-
 interface GoogleTokensResult {
    access_token: string;
    expires_in: number;
@@ -114,13 +101,8 @@ interface GoogleTokensResult {
    id_token: string;
 }
 
-export const googleAuth: RequestHandler<
-   unknown,
-   unknown,
-   unknown,
-   GoogleAuthQuery
-> = async (req, res, next) => {
-   const code = req.query.code;
+export const googleAuth: RequestHandler = async (req, res, next) => {
+   const { code } = GoogleAuthSchema.parse(req.query);
    const url = 'https://oauth2.googleapis.com/token';
 
    const values = {
@@ -187,20 +169,10 @@ export const googleAuth: RequestHandler<
       .redirect('http://localhost:5173');
 };
 
-interface GitHubAuthQuery {
-   code: string;
-   path: string;
-}
+export const githubAuth: RequestHandler = async (req, res, next) => {
+   const validatedData = GithubAuthSchema.parse(req.query);
 
-export const githubAuth: RequestHandler<
-   unknown,
-   unknown,
-   unknown,
-   GitHubAuthQuery
-> = async (req, res, next) => {
-   const code = req.query.code;
-   const path = req.query.path;
-   const githubUser = await getGithubUser({ code });
+   const githubUser = await getGithubUser({ code: validatedData.code });
 
    let user = await UserModel.findOne({
       $or: [
@@ -231,7 +203,7 @@ export const githubAuth: RequestHandler<
          sameSite: 'none',
          maxAge: 1000 * 60 * 60 * 24,
       })
-      .redirect(`http://localhost:5173${path}`);
+      .redirect(`http://localhost:5173${validatedData.path}`);
 };
 
 export const logout: RequestHandler = async (req, res, next) => {
