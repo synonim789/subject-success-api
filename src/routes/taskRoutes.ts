@@ -11,17 +11,22 @@ import {
    updateTaskTitle,
 } from '../controllers/taskController';
 import { authorization } from '../middleware/authorization';
+import { asyncWrapper } from '../utils/asyncWrapper';
 
 const router = Router();
 
-router.get('/', authorization, getTasks);
-router.post('/', authorization, addTask);
-router.get('/dates', authorization, getTaskDates);
-router.get('/completed', authorization, getCompletedCount);
-router.get('/recommended', authorization, getRecommendedTasks);
-router.get('/:taskId', authorization, getTask);
-router.put('/title/:taskId', authorization, updateTaskTitle);
-router.put('/completed/:taskId', authorization, updateTaskCompleted);
-router.delete('/:taskId', authorization, removeTask);
+router.get('/', authorization, asyncWrapper(getTasks));
+router.post('/', authorization, asyncWrapper(addTask));
+router.get('/dates', authorization, asyncWrapper(getTaskDates));
+router.get('/completed', authorization, asyncWrapper(getCompletedCount));
+router.get('/recommended', authorization, asyncWrapper(getRecommendedTasks));
+router.get('/:taskId', authorization, asyncWrapper(getTask));
+router.put('/title/:taskId', authorization, asyncWrapper(updateTaskTitle));
+router.put(
+   '/completed/:taskId',
+   authorization,
+   asyncWrapper(updateTaskCompleted),
+);
+router.delete('/:taskId', authorization, asyncWrapper(removeTask));
 
 export default router;
