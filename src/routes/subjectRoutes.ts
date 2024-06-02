@@ -7,15 +7,15 @@ import {
    getSubjects,
    updateSubject,
 } from '../controllers/subjectController';
-import { verifyJwt } from '../middleware/verifyJWT';
+import { authorization } from '../middleware/authorization';
 
 const router = Router();
 
-router.get('/', verifyJwt, getSubjects);
-router.post('/', verifyJwt, addSubject);
-router.get('/recommended', verifyJwt, getRecommendedSubject);
-router.get('/:subjectId', verifyJwt, getSubject);
-router.put('/:subjectId', verifyJwt, updateSubject);
-router.delete('/:subjectId', verifyJwt, deleteSubject);
+router.get('/', authorization, getSubjects);
+router.post('/', authorization, addSubject);
+router.get('/recommended', authorization, getRecommendedSubject);
+router.get('/:subjectId', authorization, getSubject);
+router.put('/:subjectId', authorization, updateSubject);
+router.delete('/:subjectId', authorization, deleteSubject);
 
 export default router;

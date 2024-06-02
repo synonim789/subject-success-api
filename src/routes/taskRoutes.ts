@@ -10,18 +10,18 @@ import {
    updateTaskCompleted,
    updateTaskTitle,
 } from '../controllers/taskController';
-import { verifyJwt } from '../middleware/verifyJWT';
+import { authorization } from '../middleware/authorization';
 
 const router = Router();
 
-router.get('/', verifyJwt, getTasks);
-router.post('/', verifyJwt, addTask);
-router.get('/dates', verifyJwt, getTaskDates);
-router.get('/completed', verifyJwt, getCompletedCount);
-router.get('/recommended', verifyJwt, getRecommendedTasks);
-router.get('/:taskId', verifyJwt, getTask);
-router.put('/title/:taskId', verifyJwt, updateTaskTitle);
-router.put('/completed/:taskId', verifyJwt, updateTaskCompleted);
-router.delete('/:taskId', verifyJwt, removeTask);
+router.get('/', authorization, getTasks);
+router.post('/', authorization, addTask);
+router.get('/dates', authorization, getTaskDates);
+router.get('/completed', authorization, getCompletedCount);
+router.get('/recommended', authorization, getRecommendedTasks);
+router.get('/:taskId', authorization, getTask);
+router.put('/title/:taskId', authorization, updateTaskTitle);
+router.put('/completed/:taskId', authorization, updateTaskCompleted);
+router.delete('/:taskId', authorization, removeTask);
 
 export default router;

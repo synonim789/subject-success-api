@@ -8,20 +8,20 @@ import {
    updateProfilePicture,
    updateUsername,
 } from '../controllers/userController';
+import { authorization } from '../middleware/authorization';
 import { upload } from '../middleware/multer';
-import { verifyJwt } from '../middleware/verifyJWT';
 
 const router = express.Router();
 
-router.get('/', verifyJwt, getUser);
+router.get('/', authorization, getUser);
 router.post('/sign-up', signUp);
 router.post('/forgot-password', forgotPassword);
 router.put('/reset-password', resetPassword);
-router.put('/set-new-password', verifyJwt, setNewPassword);
-router.put('/update-username', verifyJwt, updateUsername);
+router.put('/set-new-password', authorization, setNewPassword);
+router.put('/update-username', authorization, updateUsername);
 router.put(
    '/update-profile-image',
-   verifyJwt,
+   authorization,
    upload.single('image'),
    updateProfilePicture,
 );
