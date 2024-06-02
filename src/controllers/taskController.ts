@@ -1,11 +1,15 @@
 import { RequestHandler } from 'express';
-import { ParamsDictionary } from 'express-serve-static-core';
 import createHttpError from 'http-errors';
 import mongoose from 'mongoose';
 import SubjectModel from '../models/Subject.model';
 import TaskModel from '../models/Task.model';
+import {
+   AddTaskSchema,
+   UpdateTaskCompletedSchema,
+   UpdateTaskTitleSchema,
+} from '../schemas/task';
 
-export const getTasks: RequestHandler = async (req, res, next) => {
+export const getTasks: RequestHandler = async (req, res) => {
    const userId = req.user.userId;
 
    const tasks = await TaskModel.find({ user: userId }).populate('subject');
@@ -13,7 +17,7 @@ export const getTasks: RequestHandler = async (req, res, next) => {
    res.status(200).json(tasks);
 };
 
-export const getTask: RequestHandler = async (req, res, next) => {
+export const getTask: RequestHandler = async (req, res) => {
    const userId = req.user.userId;
    const taskId = req.params.taskId;
    if (!mongoose.isValidObjectId(taskId)) {
@@ -33,22 +37,9 @@ export const getTask: RequestHandler = async (req, res, next) => {
    res.status(200).json(task);
 };
 
-interface AddTaskRequest {
-   title?: string;
-   subjectId?: string;
-   date?: string;
-}
-
-export const addTask: RequestHandler<
-   unknown,
-   unknown,
-   AddTaskRequest,
-   unknown
-> = async (req, res, next) => {
-   const title = req.body.title;
-   const subjectId = req.body.subjectId;
+export const addTask: RequestHandler = async (req, res) => {
+   const { date, subjectId, title } = AddTaskSchema.parse(req.body);
    const userId = req.user.userId;
-   const date = req.body.date;
    if (!subjectId || !title) {
       throw createHttpError(400, 'subjectId, title and are required');
    }
@@ -76,21 +67,10 @@ export const addTask: RequestHandler<
    res.status(200).json(task);
 };
 
-interface UpdateTaskTitle {
-   title?: string;
-   date?: string;
-}
-
-export const updateTaskTitle: RequestHandler<
-   ParamsDictionary,
-   unknown,
-   UpdateTaskTitle,
-   unknown
-> = async (req, res, next) => {
-   const title = req.body.title;
+export const updateTaskTitle: RequestHandler = async (req, res) => {
+   const { title, date } = UpdateTaskTitleSchema.parse(req.body);
    const taskId = req.params.taskId;
    const userId = req.user.userId;
-   const date = req.body.date;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid Task Id');
    }
@@ -116,18 +96,9 @@ export const updateTaskTitle: RequestHandler<
    res.status(200).json(task);
 };
 
-interface UpdateTaskCompleted {
-   completed?: boolean;
-}
-
-export const updateTaskCompleted: RequestHandler<
-   ParamsDictionary,
-   unknown,
-   UpdateTaskCompleted,
-   unknown
-> = async (req, res, next) => {
+export const updateTaskCompleted: RequestHandler = async (req, res) => {
+   const { completed } = UpdateTaskCompletedSchema.parse(req.body);
    const taskId = req.params.taskId;
-   const completed = req.body.completed;
    const userId = req.user.userId;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid Task Id');
@@ -153,7 +124,7 @@ export const updateTaskCompleted: RequestHandler<
    res.status(200).json(task);
 };
 
-export const removeTask: RequestHandler = async (req, res, next) => {
+export const removeTask: RequestHandler = async (req, res) => {
    const taskId = req.params.taskId;
    const userId = req.user.userId;
    if (!mongoose.isValidObjectId(taskId)) {
@@ -180,7 +151,7 @@ export const removeTask: RequestHandler = async (req, res, next) => {
    res.status(200).json({ message: 'Task removed successfully' });
 };
 
-export const getTaskDates: RequestHandler = async (req, res, next) => {
+export const getTaskDates: RequestHandler = async (req, res) => {
    const userId = req.user?.userId;
 
    const taskWithDates = await TaskModel.find({
@@ -190,7 +161,7 @@ export const getTaskDates: RequestHandler = async (req, res, next) => {
    res.status(200).json(taskWithDates);
 };
 
-export const getCompletedCount: RequestHandler = async (req, res, next) => {
+export const getCompletedCount: RequestHandler = async (req, res) => {
    const userId = req.user.userId;
 
    const tasks = await TaskModel.find({ user: userId });
@@ -208,7 +179,7 @@ export const getCompletedCount: RequestHandler = async (req, res, next) => {
    });
 };
 
-export const getRecommendedTasks: RequestHandler = async (req, res, next) => {
+export const getRecommendedTasks: RequestHandler = async (req, res) => {
    const userId = req.user?.userId;
 
    const recommendedTasks = await TaskModel.find({
