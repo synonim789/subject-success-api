@@ -4,18 +4,9 @@ import createHttpError from 'http-errors';
 import mongoose from 'mongoose';
 import SubjectModel from '../models/Subject.model';
 import TaskModel from '../models/Task.model';
-import UserModel from '../models/User.model';
 
 export const getTasks: RequestHandler = async (req, res, next) => {
-   const userId = req.user?.userId;
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
+   const userId = req.user.userId;
 
    const tasks = await TaskModel.find({ user: userId }).populate('subject');
 
@@ -23,20 +14,10 @@ export const getTasks: RequestHandler = async (req, res, next) => {
 };
 
 export const getTask: RequestHandler = async (req, res, next) => {
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    const taskId = req.params.taskId;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid taskId');
-   }
-
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
    }
 
    const task = await TaskModel.findById(taskId).populate('subject');
@@ -45,7 +26,7 @@ export const getTask: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, 'Task not found');
    }
 
-   if (task.user?.toString() !== user._id.toString()) {
+   if (task.user?.toString() !== userId) {
       throw createHttpError(403, 'No permission to access this task');
    }
 
@@ -66,7 +47,7 @@ export const addTask: RequestHandler<
 > = async (req, res, next) => {
    const title = req.body.title;
    const subjectId = req.body.subjectId;
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    const date = req.body.date;
    if (!subjectId || !title) {
       throw createHttpError(400, 'subjectId, title and are required');
@@ -74,16 +55,6 @@ export const addTask: RequestHandler<
 
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid Subject Id');
-   }
-
-   if (!userId) {
-      throw createHttpError(400, 'Invalid Token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
    }
 
    const subject = await SubjectModel.findById(subjectId);
@@ -95,7 +66,7 @@ export const addTask: RequestHandler<
    const task = await TaskModel.create({
       title: title,
       completed: false,
-      user: user._id,
+      user: userId,
       subject: subject._id,
       date: date || null,
    });
@@ -118,19 +89,10 @@ export const updateTaskTitle: RequestHandler<
 > = async (req, res, next) => {
    const title = req.body.title;
    const taskId = req.params.taskId;
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    const date = req.body.date;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid Task Id');
-   }
-
-   if (!userId) {
-      throw createHttpError(400, 'Invalid Token');
-   }
-
-   const user = await UserModel.findById(userId);
-   if (!user) {
-      throw createHttpError(404, 'User not found');
    }
 
    const task = await TaskModel.findById(taskId).exec();
@@ -138,7 +100,7 @@ export const updateTaskTitle: RequestHandler<
       throw createHttpError(404, 'Task Not found');
    }
 
-   if (task.user?.toString() !== user._id.toString()) {
+   if (task.user?.toString() !== userId) {
       throw createHttpError(403, 'No permission to edit this task');
    }
 
@@ -166,18 +128,9 @@ export const updateTaskCompleted: RequestHandler<
 > = async (req, res, next) => {
    const taskId = req.params.taskId;
    const completed = req.body.completed;
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid Task Id');
-   }
-
-   if (!userId) {
-      throw createHttpError(400, 'Invalid Token');
-   }
-
-   const user = await UserModel.findById(userId);
-   if (!user) {
-      throw createHttpError(404, 'User not found');
    }
 
    const task = await TaskModel.findById(taskId);
@@ -186,7 +139,7 @@ export const updateTaskCompleted: RequestHandler<
       throw createHttpError(404, 'Task not found');
    }
 
-   if (task.user?.toString() !== user._id.toString()) {
+   if (task.user?.toString() !== userId) {
       throw createHttpError(403, 'No permission to edit this task');
    }
 
@@ -202,19 +155,9 @@ export const updateTaskCompleted: RequestHandler<
 
 export const removeTask: RequestHandler = async (req, res, next) => {
    const taskId = req.params.taskId;
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid token id');
-   }
-
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
    }
 
    const task = await TaskModel.findById(taskId);
@@ -223,7 +166,7 @@ export const removeTask: RequestHandler = async (req, res, next) => {
       throw createHttpError(404, 'Task not found');
    }
 
-   if (task.user?.toString() !== user.id.toString()) {
+   if (task.user?.toString() !== userId) {
       throw createHttpError(403, 'No permission to delete this task');
    }
 
@@ -239,15 +182,6 @@ export const removeTask: RequestHandler = async (req, res, next) => {
 
 export const getTaskDates: RequestHandler = async (req, res, next) => {
    const userId = req.user?.userId;
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
 
    const taskWithDates = await TaskModel.find({
       $and: [{ user: userId }, { date: { $ne: null } }],
@@ -257,16 +191,7 @@ export const getTaskDates: RequestHandler = async (req, res, next) => {
 };
 
 export const getCompletedCount: RequestHandler = async (req, res, next) => {
-   const userId = req.user?.userId;
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
+   const userId = req.user.userId;
 
    const tasks = await TaskModel.find({ user: userId });
    const taskCount = tasks.length;
@@ -285,15 +210,6 @@ export const getCompletedCount: RequestHandler = async (req, res, next) => {
 
 export const getRecommendedTasks: RequestHandler = async (req, res, next) => {
    const userId = req.user?.userId;
-   if (!userId) {
-      throw createHttpError(400, 'Invalid token');
-   }
-
-   const user = await UserModel.findById(userId);
-
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
 
    const recommendedTasks = await TaskModel.find({
       completed: false,
