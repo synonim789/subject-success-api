@@ -101,7 +101,7 @@ interface GoogleTokensResult {
    id_token: string;
 }
 
-export const googleAuth: RequestHandler = async (req, res, next) => {
+export const googleAuth: RequestHandler = async (req, res) => {
    const { code } = GoogleAuthSchema.parse(req.query);
    const url = 'https://oauth2.googleapis.com/token';
 
@@ -169,7 +169,7 @@ export const googleAuth: RequestHandler = async (req, res, next) => {
       .redirect('http://localhost:5173');
 };
 
-export const githubAuth: RequestHandler = async (req, res, next) => {
+export const githubAuth: RequestHandler = async (req, res) => {
    const validatedData = GithubAuthSchema.parse(req.query);
 
    const githubUser = await getGithubUser({ code: validatedData.code });
@@ -206,7 +206,7 @@ export const githubAuth: RequestHandler = async (req, res, next) => {
       .redirect(`http://localhost:5173${validatedData.path}`);
 };
 
-export const logout: RequestHandler = async (req, res, next) => {
+export const logout: RequestHandler = async (req, res) => {
    const cookies = req.cookies;
    if (!cookies.refreshToken) {
       return res.sendStatus(204);
