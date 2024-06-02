@@ -1,7 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import { isHttpError } from 'http-errors';
+import { ZodError } from 'zod';
 
-const errorHandler = (
+const errorMiddleware = (
    error: unknown,
    req: Request,
    res: Response,
@@ -14,7 +15,13 @@ const errorHandler = (
       statusCode = error.status;
       errorMessage = error.message;
    }
+
+   if (error instanceof ZodError) {
+      statusCode = 400;
+      errorMessage = error.issues.toString();
+   }
+
    res.status(statusCode).json({ message: errorMessage });
 };
 
-export default errorHandler;
+export default errorMiddleware;

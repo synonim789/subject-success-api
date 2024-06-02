@@ -5,7 +5,7 @@ import express from 'express';
 import createHttpError from 'http-errors';
 import morgan from 'morgan';
 import { corsOptions } from './config/corsOptions';
-import errorHandler from './middleware/errorHandler';
+import errorMiddleware from './middleware/errorMiddleware';
 import authRoutes from './routes/authRoutes';
 import subjectRoutes from './routes/subjectRoutes';
 import taskRoutes from './routes/taskRoutes';
@@ -27,6 +27,6 @@ app.use((req, res, next) => {
    next(createHttpError(404, 'Endpoint not found'));
 });
 
-app.use(errorHandler);
+app.use(errorMiddleware);
 
 export default app;
