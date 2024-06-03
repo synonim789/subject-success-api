@@ -15,6 +15,9 @@ export const authorization = async (
          throw createHttpError(401, 'Access Denied');
       }
       const payload = jwt.verify(accessToken, env.ACCESS_TOKEN_SECRET) as any;
+      if (!payload.userId) {
+         throw createHttpError(400, 'Invalid token');
+      }
       const user = await UserModel.findById(payload.userId);
 
       if (!user) {
