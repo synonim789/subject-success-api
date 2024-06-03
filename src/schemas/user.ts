@@ -5,32 +5,38 @@ const passwordValidation = new RegExp(
 );
 
 export const SingUpSchema = z.object({
-   username: z.string(),
-   email: z.string().email(),
+   username: z.string({ message: 'All fields must be filled' }),
+   email: z
+      .string({ message: 'All fields must be filled' })
+      .email({ message: 'Not valid Email' }),
    password: z
-      .string()
-      .regex(passwordValidation, { message: 'Password not strong enough' }),
+      .string({ message: 'All fields must be filled' })
+      .regex(passwordValidation, { message: 'Password not strong enough.' }),
 });
 
 export const ForgotPasswordSchema = z.object({
-   email: z.string().email(),
+   email: z.string({ message: 'Email was not provided' }).email(),
 });
 
 export const ResetPasswordSchema = z.object({
-   otp: z.number().int(),
+   otp: z.number({ message: 'OTP Required' }).int(),
    password: z
-      .string()
+      .string({ message: 'All fields must be filled' })
       .regex(passwordValidation, { message: 'Password not strong enough' }),
    confirmPassword: z
-      .string()
+      .string({ message: 'All fields must be filled' })
       .regex(passwordValidation, { message: 'Password not strong enough' }),
 });
 
 export const SetNewPasswordSchema = z.object({
-   password: z.string().regex(passwordValidation),
-   confirmPassword: z.string().regex(passwordValidation),
+   password: z
+      .string({ message: 'password and confirm password are required' })
+      .regex(passwordValidation, { message: 'Password not strong enough' }),
+   confirmPassword: z
+      .string({ message: 'password and confirm password are required' })
+      .regex(passwordValidation, { message: 'Password not strong enough' }),
 });
 
 export const UpdateUsernameSchema = z.object({
-   username: z.string(),
+   username: z.string({ message: 'Username is required' }),
 });
