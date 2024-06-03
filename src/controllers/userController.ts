@@ -54,9 +54,6 @@ export const getUser: RequestHandler = async (req, res) => {
    const user = await UserModel.findById(userId).select(
       '-password -googleId -githubId',
    );
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
    res.status(200).json(user);
 };
 
@@ -110,18 +107,11 @@ export const resetPassword: RequestHandler = async (req, res) => {
       confirmPassword,
       password: passwordRaw,
    } = ResetPasswordSchema.parse(req.body);
-   if (!otp) {
-      throw createHttpError(400, 'OTP Required');
-   }
 
    const otpExist = await OtpModel.findOne({ otp: otp }).exec();
 
    if (!otpExist) {
       throw createHttpError(400, 'Invalid OTP');
-   }
-
-   if (!passwordRaw || !confirmPassword) {
-      throw createHttpError(400, 'password and confirm password are required');
    }
 
    if (passwordRaw !== confirmPassword) {
@@ -148,16 +138,9 @@ export const setNewPassword: RequestHandler = async (req, res) => {
       SetNewPasswordSchema.parse(req.body);
 
    const userId = req.user.userId;
-   if (!passwordRaw || !confirmPasswordRaw) {
-      throw createHttpError(400, 'password and confirm password are required');
-   }
 
    if (passwordRaw !== confirmPasswordRaw) {
       throw createHttpError(400, 'Passwords do not match');
-   }
-
-   if (!userId) {
-      throw createHttpError(400, 'Token not provided');
    }
 
    const user = await UserModel.findById(userId);
@@ -175,10 +158,7 @@ export const setNewPassword: RequestHandler = async (req, res) => {
 
 export const updateUsername: RequestHandler = async (req, res) => {
    const { username } = UpdateUsernameSchema.parse(req.body);
-   const userId = req.user?.userId;
-   if (!username) {
-      throw createHttpError(400, 'Username is required');
-   }
+   const userId = req.user.userId;
 
    const user = await UserModel.findById(userId);
 
