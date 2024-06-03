@@ -1,8 +1,12 @@
 import { z } from 'zod';
 
 export const LoginSchema = z.object({
-   email: z.string().email('Invalid Email'),
-   password: z.string().min(1, { message: 'Passowrd must be provided' }),
+   email: z
+      .string({ message: 'Please provide both email and password to proceed' })
+      .email(),
+   password: z.string({
+      message: 'Please provide both email and password to proceed',
+   }),
 });
 
 export const GoogleAuthSchema = z.object({
