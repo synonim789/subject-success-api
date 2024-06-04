@@ -8,6 +8,6 @@ export const AddSubjectSchema = z.object({
 export const UpdateSubjectSchema = z.object({
    name: z.string().min(1, { message: 'Subject Name Is Required' }),
    type: z.enum(['grade', 'completion']),
-   grade: z.number(),
-   completed: z.boolean(),
+   grade: z.number().optional(),
+   completed: z.boolean().optional(),
 });
