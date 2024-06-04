@@ -173,7 +173,7 @@ export const updateUsername: RequestHandler = async (req, res) => {
 
 export const updateProfilePicture: RequestHandler = async (req, res) => {
    const image = req.file;
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    if (!image) {
       throw createHttpError(400, 'Image is required');
    }
