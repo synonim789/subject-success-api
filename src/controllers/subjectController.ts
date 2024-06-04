@@ -6,7 +6,7 @@ import TaskModel from '../models/Task.model';
 import { AddSubjectSchema, UpdateSubjectSchema } from '../schemas/subject';
 
 export const getSubjects: RequestHandler = async (req, res) => {
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
 
    const subjects = await SubjectModel.find({ user: userId }).populate('tasks');
 
@@ -15,7 +15,7 @@ export const getSubjects: RequestHandler = async (req, res) => {
 
 export const getSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid subject id');
    }
@@ -36,9 +36,6 @@ export const getSubject: RequestHandler = async (req, res) => {
 export const addSubject: RequestHandler = async (req, res) => {
    const { name, type } = AddSubjectSchema.parse(req.body);
    const userId = req.user.userId;
-   if (!name || !type) {
-      throw createHttpError(400, 'name and type are required');
-   }
 
    const subject = new SubjectModel();
 
@@ -60,7 +57,7 @@ export const addSubject: RequestHandler = async (req, res) => {
 export const updateSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
    const { name, type, completed, grade } = UpdateSubjectSchema.parse(req.body);
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid Subject Id');
    }
@@ -94,10 +91,10 @@ export const updateSubject: RequestHandler = async (req, res) => {
 
 export const deleteSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
 
    if (!mongoose.isValidObjectId(subjectId)) {
-      throw createHttpError(400, 'Invalid subject');
+      throw createHttpError(400, 'Invalid subject id');
    }
 
    const subject = await SubjectModel.findById(subjectId);
@@ -113,7 +110,7 @@ export const deleteSubject: RequestHandler = async (req, res) => {
 
    await subject.deleteOne();
 
-   res.status(200).json({ message: 'Task removed successfully' });
+   res.status(200).json({ message: 'Subject removed successfully' });
 };
 
 export const getRecommendedSubject: RequestHandler = async (req, res) => {
