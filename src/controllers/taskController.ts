@@ -152,7 +152,7 @@ export const removeTask: RequestHandler = async (req, res) => {
 };
 
 export const getTaskDates: RequestHandler = async (req, res) => {
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
 
    const taskWithDates = await TaskModel.find({
       $and: [{ user: userId }, { date: { $ne: null } }],
@@ -180,7 +180,7 @@ export const getCompletedCount: RequestHandler = async (req, res) => {
 };
 
 export const getRecommendedTasks: RequestHandler = async (req, res) => {
-   const userId = req.user?.userId;
+   const userId = req.user.userId;
 
    const recommendedTasks = await TaskModel.find({
       completed: false,
