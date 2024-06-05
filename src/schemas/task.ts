@@ -8,7 +8,7 @@ export const AddTaskSchema = z.object({
 
 export const UpdateTaskTitleSchema = z.object({
    title: z.string(),
-   date: z.string(),
+   date: z.string().optional(),
 });
 
 export const UpdateTaskCompletedSchema = z.object({
