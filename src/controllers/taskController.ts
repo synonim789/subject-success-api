@@ -21,7 +21,7 @@ export const getTask: RequestHandler = async (req, res) => {
    const userId = req.user.userId;
    const taskId = req.params.taskId;
    if (!mongoose.isValidObjectId(taskId)) {
-      throw createHttpError(400, 'Invalid taskId');
+      throw createHttpError(400, 'Invalid Task Id');
    }
 
    const task = await TaskModel.findById(taskId).populate('subject');
@@ -40,9 +40,6 @@ export const getTask: RequestHandler = async (req, res) => {
 export const addTask: RequestHandler = async (req, res) => {
    const { date, subjectId, title } = AddTaskSchema.parse(req.body);
    const userId = req.user.userId;
-   if (!subjectId || !title) {
-      throw createHttpError(400, 'subjectId, title and are required');
-   }
 
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid Subject Id');
@@ -84,10 +81,6 @@ export const updateTaskTitle: RequestHandler = async (req, res) => {
       throw createHttpError(403, 'No permission to edit this task');
    }
 
-   if (!title) {
-      throw createHttpError(400, 'Title is required');
-   }
-
    task.title = title;
    task.date = date;
 
@@ -114,10 +107,6 @@ export const updateTaskCompleted: RequestHandler = async (req, res) => {
       throw createHttpError(403, 'No permission to edit this task');
    }
 
-   if (completed === null || completed === undefined) {
-      throw createHttpError(400, 'Completed is required');
-   }
-
    task.completed = completed;
    await task.save();
 
@@ -128,7 +117,7 @@ export const removeTask: RequestHandler = async (req, res) => {
    const taskId = req.params.taskId;
    const userId = req.user.userId;
    if (!mongoose.isValidObjectId(taskId)) {
-      throw createHttpError(400, 'Invalid token id');
+      throw createHttpError(400, 'Invalid Task Id');
    }
 
    const task = await TaskModel.findById(taskId);
