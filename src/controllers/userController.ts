@@ -145,13 +145,9 @@ export const setNewPassword: RequestHandler = async (req, res) => {
 
    const user = await UserModel.findById(userId);
 
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
-
    const hashedPassword = await bcrypt.hash(passwordRaw, 10);
-   user.password = hashedPassword;
-   await user.save();
+   user!.password = hashedPassword;
+   await user!.save();
 
    res.status(200).json({ message: 'Password updated successfully' });
 };
@@ -162,12 +158,8 @@ export const updateUsername: RequestHandler = async (req, res) => {
 
    const user = await UserModel.findById(userId);
 
-   if (!user) {
-      throw createHttpError(404, 'User not found');
-   }
-
-   user.username = username;
-   await user.save();
+   user!.username = username;
+   await user!.save();
    res.status(200).json({ message: 'Username updated successfully' });
 };
 
