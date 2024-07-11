@@ -49,7 +49,7 @@ export const signUp: RequestHandler = async (req, res) => {
 };
 
 export const getUser: RequestHandler = async (req, res) => {
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const user = await UserModel.findById(userId).select(
       '-password -googleId -githubId',
@@ -137,7 +137,7 @@ export const setNewPassword: RequestHandler = async (req, res) => {
    const { password: passwordRaw, confirmPassword: confirmPasswordRaw } =
       SetNewPasswordSchema.parse(req.body);
 
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    if (passwordRaw !== confirmPasswordRaw) {
       throw createHttpError(400, 'Passwords do not match');
@@ -158,7 +158,7 @@ export const setNewPassword: RequestHandler = async (req, res) => {
 
 export const updateUsername: RequestHandler = async (req, res) => {
    const { username } = UpdateUsernameSchema.parse(req.body);
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const user = await UserModel.findById(userId);
 
@@ -173,7 +173,7 @@ export const updateUsername: RequestHandler = async (req, res) => {
 
 export const updateProfilePicture: RequestHandler = async (req, res) => {
    const image = req.file;
-   const userId = req.user.userId;
+   const userId = req.user._id;
    if (!image) {
       throw createHttpError(400, 'Image is required');
    }

@@ -6,7 +6,7 @@ import TaskModel from '../models/Task.model';
 import { AddSubjectSchema, UpdateSubjectSchema } from '../schemas/subject';
 
 export const getSubjects: RequestHandler = async (req, res) => {
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const subjects = await SubjectModel.find({ user: userId }).populate('tasks');
 
@@ -15,7 +15,7 @@ export const getSubjects: RequestHandler = async (req, res) => {
 
 export const getSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
-   const userId = req.user.userId;
+   const userId = req.user._id;
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid subject id');
    }
@@ -35,7 +35,7 @@ export const getSubject: RequestHandler = async (req, res) => {
 
 export const addSubject: RequestHandler = async (req, res) => {
    const { name, type } = AddSubjectSchema.parse(req.body);
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const subject = new SubjectModel();
 
@@ -57,7 +57,7 @@ export const addSubject: RequestHandler = async (req, res) => {
 export const updateSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
    const { name, type, completed, grade } = UpdateSubjectSchema.parse(req.body);
-   const userId = req.user.userId;
+   const userId = req.user._id;
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid Subject Id');
    }
@@ -91,7 +91,7 @@ export const updateSubject: RequestHandler = async (req, res) => {
 
 export const deleteSubject: RequestHandler = async (req, res) => {
    const subjectId = req.params.subjectId;
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid subject id');
@@ -114,7 +114,7 @@ export const deleteSubject: RequestHandler = async (req, res) => {
 };
 
 export const getRecommendedSubject: RequestHandler = async (req, res) => {
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const subjects = await SubjectModel.aggregate([
       {

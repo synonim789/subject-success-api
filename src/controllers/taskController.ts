@@ -10,7 +10,7 @@ import {
 } from '../schemas/task';
 
 export const getTasks: RequestHandler = async (req, res) => {
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const tasks = await TaskModel.find({ user: userId }).populate('subject');
 
@@ -18,7 +18,7 @@ export const getTasks: RequestHandler = async (req, res) => {
 };
 
 export const getTask: RequestHandler = async (req, res) => {
-   const userId = req.user.userId;
+   const userId = req.user._id;
    const taskId = req.params.taskId;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid Task Id');
@@ -39,7 +39,7 @@ export const getTask: RequestHandler = async (req, res) => {
 
 export const addTask: RequestHandler = async (req, res) => {
    const { date, subjectId, title } = AddTaskSchema.parse(req.body);
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    if (!mongoose.isValidObjectId(subjectId)) {
       throw createHttpError(400, 'Invalid Subject Id');
@@ -67,7 +67,7 @@ export const addTask: RequestHandler = async (req, res) => {
 export const updateTaskTitle: RequestHandler = async (req, res) => {
    const { title, date } = UpdateTaskTitleSchema.parse(req.body);
    const taskId = req.params.taskId;
-   const userId = req.user.userId;
+   const userId = req.user._id;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid Task Id');
    }
@@ -92,7 +92,7 @@ export const updateTaskTitle: RequestHandler = async (req, res) => {
 export const updateTaskCompleted: RequestHandler = async (req, res) => {
    const { completed } = UpdateTaskCompletedSchema.parse(req.body);
    const taskId = req.params.taskId;
-   const userId = req.user.userId;
+   const userId = req.user._id;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid Task Id');
    }
@@ -115,7 +115,7 @@ export const updateTaskCompleted: RequestHandler = async (req, res) => {
 
 export const removeTask: RequestHandler = async (req, res) => {
    const taskId = req.params.taskId;
-   const userId = req.user.userId;
+   const userId = req.user._id;
    if (!mongoose.isValidObjectId(taskId)) {
       throw createHttpError(400, 'Invalid Task Id');
    }
@@ -141,7 +141,7 @@ export const removeTask: RequestHandler = async (req, res) => {
 };
 
 export const getTaskDates: RequestHandler = async (req, res) => {
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const taskWithDates = await TaskModel.find({
       $and: [{ user: userId }, { date: { $ne: null } }],
@@ -151,7 +151,7 @@ export const getTaskDates: RequestHandler = async (req, res) => {
 };
 
 export const getCompletedCount: RequestHandler = async (req, res) => {
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const tasks = await TaskModel.find({ user: userId });
    const taskCount = tasks.length;
@@ -169,7 +169,7 @@ export const getCompletedCount: RequestHandler = async (req, res) => {
 };
 
 export const getRecommendedTasks: RequestHandler = async (req, res) => {
-   const userId = req.user.userId;
+   const userId = req.user._id;
 
    const recommendedTasks = await TaskModel.find({
       completed: false,
