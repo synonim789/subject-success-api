@@ -1,11 +1,3 @@
-// import jwt from 'jsonwebtoken';
-// import { MongoMemoryServer } from 'mongodb-memory-server';
-// import mongoose from 'mongoose';
-// import supertest from 'supertest';
-// import app from '../app';
-// import UserModel from '../models/User.model';
-// import env from '../utils/cleanEnv';
-
 import mongoose from 'mongoose';
 import supertest from 'supertest';
 import app from '../app';
@@ -240,6 +232,32 @@ describe('Subject Test', () => {
             .set('Cookie', `accessToken=${accessToken}`);
          expect(statusCode).toBe(200);
          expect(body[0].name).toBe(subject.name);
+      });
+   });
+   describe('Remove all subject', () => {
+      it('should return status 200 and message and all subjects should be deleted', async () => {
+         const subject = new SubjectModel({
+            name: 'Math',
+            type: 'completion',
+            user: user._id,
+            status: 'noTasks',
+         });
+         const subject2 = new SubjectModel({
+            name: 'English',
+            type: 'grade',
+            user: user._id,
+            status: 'noTasks',
+         });
+         await subject.save();
+         await subject2.save();
+         const response = await supertest(app)
+            .delete('/subject/all')
+            .set('Cookie', `accessToken=${accessToken}`);
+         console.log(response.body);
+         expect(response.status).toBe(200);
+         expect(response.body).toEqual({
+            message: 'Subjects deleted successfully',
+         });
       });
    });
 });

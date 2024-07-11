@@ -153,3 +153,10 @@ export const getRecommendedSubject: RequestHandler = async (req, res) => {
 
    res.status(200).json(subjects);
 };
+
+export const removeAllSubjects: RequestHandler = async (req, res) => {
+   const userId = req.user._id;
+   await SubjectModel.deleteMany({ user: userId });
+   await TaskModel.deleteMany({ user: userId });
+   res.status(200).json({ message: 'Subjects deleted successfully' });
+};
