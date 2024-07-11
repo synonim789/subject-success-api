@@ -191,3 +191,11 @@ export const updateProfilePicture: RequestHandler = async (req, res) => {
 
    res.status(200).json({ message: 'Image uploaded' });
 };
+
+export const deleteUser: RequestHandler = async (req, res) => {
+   const userId = req.user._id;
+   const user = await UserModel.findById(userId);
+
+   await user!.deleteOne();
+   res.status(200).json({ message: 'User deleted successfully' });
+};

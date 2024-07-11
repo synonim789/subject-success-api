@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+   deleteUser,
    forgotPassword,
    getUser,
    resetPassword,
@@ -26,5 +27,6 @@ router.put(
    upload.single('image'),
    asyncWrapper(updateProfilePicture),
 );
+router.delete('/', authorization, asyncWrapper(deleteUser));
 
 export default router;

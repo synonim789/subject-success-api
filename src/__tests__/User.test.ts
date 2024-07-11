@@ -534,4 +534,22 @@ describe('User Routes test', () => {
    //       });
    //    });
    // });
+   describe('Delete User Test', () => {
+      it('should delete user successfully', async () => {
+         const user = await UserModel.findOne({
+            email: 'test@example.com',
+         });
+         const accessToken = jwt.sign(
+            { userId: user?._id },
+            env.ACCESS_TOKEN_SECRET,
+         );
+         const response = await supertest(app)
+            .delete('/user')
+            .set('Cookie', [`accessToken=${accessToken}`]);
+         expect(response.status).toBe(200);
+         expect(response.body).toEqual({
+            message: 'User deleted successfully',
+         });
+      });
+   });
 });
