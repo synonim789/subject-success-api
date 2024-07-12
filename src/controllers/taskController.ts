@@ -180,3 +180,11 @@ export const getRecommendedTasks: RequestHandler = async (req, res) => {
       .limit(3);
    res.status(200).json(recommendedTasks);
 };
+
+export const removeAllTasks: RequestHandler = async (req, res) => {
+   const userId = req.user._id;
+   await TaskModel.deleteMany({ user: userId });
+   await SubjectModel.updateMany({ user: userId }, { tasks: [] });
+
+   res.status(200).json({ message: 'Tasks deleted successfully' });
+};

@@ -6,6 +6,7 @@ import {
    getTask,
    getTaskDates,
    getTasks,
+   removeAllTasks,
    removeTask,
    updateTaskCompleted,
    updateTaskTitle,
@@ -27,6 +28,7 @@ router.put(
    authorization,
    asyncWrapper(updateTaskCompleted),
 );
+router.delete('/all', authorization, asyncWrapper(removeAllTasks));
 router.delete('/:taskId', authorization, asyncWrapper(removeTask));
 
 export default router;

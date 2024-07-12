@@ -386,4 +386,28 @@ describe('Task Test', () => {
          expect(body).toHaveLength(3);
       });
    });
+   describe('Remove All Tasks', () => {
+      it('should return message and status 200 if everything is successful', async () => {
+         await TaskModel.create({
+            title: 'Task',
+            user: user._id,
+            subject: subjectId,
+            completed: false,
+         });
+         await TaskModel.create({
+            title: 'Task 2',
+            user: user._id,
+            subject: subjectId,
+            completed: false,
+         });
+
+         const response = await supertest(app)
+            .delete('/task/all')
+            .set('Cookie', `accessToken=${accessToken}`);
+         expect(response.status).toBe(200);
+         expect(response.body).toEqual({
+            message: 'Tasks deleted successfully',
+         });
+      });
+   });
 });
