@@ -195,13 +195,21 @@ export const githubAuth: RequestHandler = async (req, res) => {
       env.REFRESH_TOKEN_SECRET,
       { expiresIn: '1d' },
    );
-
+   const accessToken = jwt.sign({ userId: user._id }, env.ACCESS_TOKEN_SECRET, {
+      expiresIn: '15m',
+   });
    res.status(201)
       .cookie('refreshToken', refreshToken, {
          httpOnly: true,
          secure: true,
          sameSite: 'none',
          maxAge: 1000 * 60 * 60 * 24,
+      })
+      .cookie('accessToken', accessToken, {
+         httpOnly: true,
+         secure: true,
+         sameSite: 'none',
+         maxAge: 1000 * 60 * 15,
       })
       .redirect(env.CLIENT_URL);
 };
