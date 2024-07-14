@@ -166,7 +166,7 @@ export const googleAuth: RequestHandler = async (req, res) => {
          sameSite: 'none',
          maxAge: 1000 * 60 * 15,
       })
-      .redirect('http://localhost:5173');
+      .redirect(env.CLIENT_URL);
 };
 
 export const githubAuth: RequestHandler = async (req, res) => {
@@ -203,7 +203,7 @@ export const githubAuth: RequestHandler = async (req, res) => {
          sameSite: 'none',
          maxAge: 1000 * 60 * 60 * 24,
       })
-      .redirect(`http://localhost:5173${validatedData.path}`);
+      .redirect(env.CLIENT_URL);
 };
 
 export const logout: RequestHandler = async (req, res) => {
