@@ -8,20 +8,22 @@ const errorMiddleware = (
    res: Response,
    next: NextFunction,
 ) => {
-   let errorMessage = 'an unknown error has occured';
-   let statusCode = 500;
+   let errorMessage: string;
+   let statusCode: number;
+   console.log(error);
    if (isHttpError(error)) {
       statusCode = error.status;
       errorMessage = error.message;
-   }
-
-   if (error instanceof ZodError) {
+   } else if (error instanceof ZodError) {
       const errorMessages = error.issues.map((issue) => issue.message);
       const uniqueMessages = [...new Set(errorMessages)];
       errorMessage = uniqueMessages.join(', ');
       statusCode = 400;
+   } else {
+      errorMessage = 'an unknown error has occured';
+      statusCode = 500;
+      console.log(error);
    }
-
    res.status(statusCode).json({ message: errorMessage });
 };
 
