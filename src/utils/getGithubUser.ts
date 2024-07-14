@@ -52,6 +52,7 @@ const getGithubUser = async ({ code }: GetGithubUser) => {
    const githubToken = await axios.post(
       `https://github.com/login/oauth/access_token?client_id=${env.GITHUB_CLIENT_ID}&client_secret=${env.GITHUB_CLIENT_SECRET}&code=${code}`,
    );
+   console.log(`Github Token Response`, githubToken.data);
    const accessTokenObject = qs.decode(githubToken.data);
    const access_token = accessTokenObject.access_token;
 
