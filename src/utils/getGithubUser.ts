@@ -49,6 +49,10 @@ type GithubEmail = {
 };
 
 const getGithubUser = async ({ code }: GetGithubUser) => {
+   console.log(
+      `Get Github User Params ${code} ${env.GITHUB_CLIENT_ID} ${env.GITHUB_CLIENT_SECRET}`,
+   );
+
    const githubToken = await axios.post(
       `https://github.com/login/oauth/access_token?client_id=${env.GITHUB_CLIENT_ID}&client_secret=${env.GITHUB_CLIENT_SECRET}&code=${code}`,
    );
