@@ -1,1 +1,3 @@
-export const allowedOrigins = ['http://localhost:5173'];
+import env from '../utils/cleanEnv';
+
+export const allowedOrigins = [env.CLIENT_URL];
