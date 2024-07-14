@@ -50,7 +50,7 @@ type GithubEmail = {
 
 const getGithubUser = async ({ code }: GetGithubUser) => {
    console.log(
-      `Get Github User Params ${code} ${env.GITHUB_CLIENT_ID} ${env.GITHUB_CLIENT_SECRET}`,
+      `Get Githubv  User Params ${code} ${env.GITHUB_CLIENT_ID} ${env.GITHUB_CLIENT_SECRET}`,
    );
 
    const githubToken = await axios.post(
