@@ -22,7 +22,7 @@ export const login: RequestHandler = async (req, res) => {
       throw createHttpError(401, 'Invalid email or password');
    }
 
-   if (user.googleId || user.googleId) {
+   if (user.googleId || user.googleId || !user.password) {
       throw createHttpError(401, 'User is signed up by Google or Github');
    }
 
