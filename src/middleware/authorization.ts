@@ -13,7 +13,7 @@ export const authorization = async (
    const accessToken = req.cookies.accessToken;
    try {
       if (!accessToken) {
-         throw createHttpError(401, 'Access Denied');
+         throw createHttpError(403, 'Access Denied');
       }
       const payload = jwt.verify(accessToken, env.ACCESS_TOKEN_SECRET) as any;
       if (!payload.userId) {
